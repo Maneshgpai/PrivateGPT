@@ -1,18 +1,39 @@
-import { useEffect, useState} from "react"
-
+import DropZone from "./components/DropZone"
+import { useState } from "react";
 export default function Home() {
-  const [data, setData] = useState("Loading")
+  const [file, setFile] = useState(null);
 
-  useEffect(()=>{
-    fetch("http://localhost:8080/api").then(
-      response => response.json()
-    ).then(
-      data => setData(data.message)
-    )
-  })
+  const handleSubmit = async (e) => {
+    event.preventDefault()
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('filename_as_doc_id', 'true');
+
+    const response = await fetch('http://localhost:8080/api/uploadFile', {
+    mode: 'cors',
+    method: 'POST',
+    body: formData,
+    });
+
+    const responseText = await response.text();
+    console.log(JSON.parse(responseText))
+    return responseText;
+  };
+
+  const handleOnChange = e => {
+    console.log(e.target.files[0]);
+    setFile(e.target.files[0]);
+  };
   return (
-    <main>
-      {data}
-    </main>
+    <div className="h-screen min-w-full">
+      <h1 className=" text-center text-4xl font-semibold mt-3">Chat with your data</h1>
+      {/* <DropZone className='p-16 mt-10 border border-neutral-200' /> */}
+      <form onSubmit={handleSubmit} className="flex flex-col justify-center align-middle mt-10">
+        <div className=" text-center">
+        <input type="file" onChange={(e) => handleOnChange(e)}/>
+        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">Submit</button>
+        </div>
+      </form>
+    </div>
   )
 }

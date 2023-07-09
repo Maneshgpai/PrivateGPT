@@ -26,7 +26,8 @@ def query_index():
 @app.route("/api/uploadFile", methods=["POST"])
 def upload_file():
     if 'file' not in request.files:
-        return "Please send a POST request with a file", 400
+        # return "Please send a POST request with a file", 400
+        return jsonify({"message":"Please send a POST request with a file", "status":400})
     
     filepath = None
     try:
@@ -43,13 +44,14 @@ def upload_file():
         # cleanup temp file
         if filepath is not None and os.path.exists(filepath):
             os.remove(filepath)
-        return "Error: {}".format(str(e)), 500
+        error = "Error: {}".format(str(e))
+        return jsonify({"message":error, "status":400})
+
 
     # cleanup temp file
     if filepath is not None and os.path.exists(filepath):
         os.remove(filepath)
-
-    return "File inserted!", 200
+    return jsonify({"message":"File inserted!", "status":"200"})
 
 
 @app.route("/api/getDocuments", methods=["GET"])
