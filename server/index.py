@@ -17,16 +17,17 @@ def home():
 def query_index():
     query_text = request.args.get("text", None)
     if query_text is None:
-        return "No text found, please include a ?text=blah parameter in the URL", 400
+        return jsonify({"error":"No text found, please include a ?text=blah parameter in the URL"}), 400
 
     response = funcs.query_index(query_text)
-    return str(response), 200
+    return jsonify({"message": f"{response}"})
 
 
 @app.route("/api/uploadFile", methods=["POST"])
 def upload_file():
     if 'file' not in request.files:
-        return "Please send a POST request with a file", 400
+        # return "Please send a POST request with a file", 400
+        return jsonify({"message":"Please send a File"}), 400
     
     filepath = None
     try:
@@ -43,13 +44,14 @@ def upload_file():
         # cleanup temp file
         if filepath is not None and os.path.exists(filepath):
             os.remove(filepath)
-        return "Error: {}".format(str(e)), 500
+        error = "Error: {}".format(str(e))
+        return jsonify({"message":error}), 400
+
 
     # cleanup temp file
-    if filepath is not None and os.path.exists(filepath):
-        os.remove(filepath)
-
-    return "File inserted!", 200
+    # if filepath is not None and os.path.exists(filepath):
+    #     os.remove(filepath)
+    return jsonify({"message":"File inserted!"}), 200
 
 
 @app.route("/api/getDocuments", methods=["GET"])
