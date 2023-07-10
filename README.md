@@ -49,7 +49,7 @@ Navigate to server folder using the terminal
 
 Create a file named *.env* inside the server folder & place the OPENAI API key
 ```bash
-OPENAI_API_KEY=openai-api-key
+OPENAI_API_KEY=your-openai-api-key
 ```
 
 #### 2. Create a Python virtual Environment
