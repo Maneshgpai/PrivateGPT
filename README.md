@@ -75,5 +75,5 @@ pip install -r requirements.txt
 ```
 #### 4. Running the server
 ```bash
-python3 hello.py
+python3 index.py
 ```
