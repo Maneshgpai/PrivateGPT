@@ -80,5 +80,7 @@ build/
 *.egg
 
 # System or temporary files
-.DS_Store
 Thumbs.db
+
+saved_index
+stored_documents.pkl

@@ -1,25 +1,41 @@
 import { useState } from "react";
 import React from 'react'
+import Loading from "./Loading";
 
 function FileUpload() {
     const [file, setFile] = useState(null);
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState("")
     
       const handleSubmit = async (e) => {
         event.preventDefault()
+        setIsLoading(true)
         const formData = new FormData();
         formData.append('file', file);
         formData.append('filename_as_doc_id', 'true');
     
+        try{
         const response = await fetch('http://localhost:8080/api/uploadFile', {
         mode: 'cors',
         method: 'POST',
         body: formData,
         });
-    
+
         const responseText = await response.text();
         console.log(JSON.parse(responseText))
         if(response.status === 200){
+            setIsLoading(false)
             window.location.href = '/chat'
+        }
+        else {
+          setIsLoading(false)
+          setError(JSON.parse(responseText))
+        }
+        }
+
+        catch{
+        setIsLoading(false)
+        setError("Something went wrong")
         }
       };
     
@@ -31,12 +47,17 @@ function FileUpload() {
         <div className="h-screen min-w-full">
           <h1 className=" text-center text-4xl font-semibold mt-3">Chat with your data</h1>
           {/* <DropZone className='p-16 mt-10 border border-neutral-200' /> */}
-          <form onSubmit={handleSubmit} className="flex flex-col justify-center align-middle mt-10">
-            <div className=" text-center">
+           <form onSubmit={handleSubmit} className="flex flex-col justify-center align-middle mt-20">
+            { !isLoading && <div className=" text-center">
             <input type="file" onChange={(e) => handleOnChange(e)}/>
             <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">Submit</button>
-            </div>
+            </div>}
+            {
+            isLoading && <Loading/>
+            }
           </form>
+          <div className="flex justify-center align-middle text-red-700 mt-6"> <p>{error}</p> </div>
+          
         </div>
       )
 }
