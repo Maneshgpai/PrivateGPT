@@ -82,5 +82,5 @@ build/
 # System or temporary files
 Thumbs.db
 
-saved_index
+saved_index/
 stored_documents.pkl
