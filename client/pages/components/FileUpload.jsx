@@ -9,6 +9,9 @@ function FileUpload() {
     
       const handleSubmit = async (e) => {
         event.preventDefault()
+        if(!file){
+          return null
+        }
         setIsLoading(true)
         const formData = new FormData();
         formData.append('file', file);
@@ -42,6 +45,7 @@ function FileUpload() {
       const handleOnChange = e => {
         console.log(e.target.files[0]);
         setFile(e.target.files[0]);
+        setError("")
       };
       return (
         <div className="h-screen min-w-full">
@@ -50,7 +54,7 @@ function FileUpload() {
            <form onSubmit={handleSubmit} className="flex flex-col justify-center align-middle mt-20">
             { !isLoading && <div className=" text-center">
             <input type="file" onChange={(e) => handleOnChange(e)}/>
-            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">Submit</button>
+            <button type="submit" onClick={file ? () => setError("") : () => setError("Please upload a file")} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">Submit</button>
             </div>}
             {
             isLoading && <Loading/>
