@@ -84,3 +84,5 @@ Thumbs.db
 
 saved_index/
 stored_documents.pkl
+
+app.log
