@@ -29,10 +29,12 @@ function FileUpload() {
         if(response.status === 200){
             setIsLoading(false)
             window.location.href = '/chat'
+
         }
         else {
           setIsLoading(false)
-          setError(JSON.parse(responseText))
+          const data = JSON.parse(responseText)
+          setError(data.message)
         }
         }
 
