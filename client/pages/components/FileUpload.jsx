@@ -51,8 +51,7 @@ function FileUpload() {
       };
       return (
         <div className="h-screen min-w-full">
-          <h1 className=" text-center text-4xl font-semibold mt-3">Chat with your data</h1>
-          {/* <DropZone className='p-16 mt-10 border border-neutral-200' /> */}
+          <h1 className=" text-center py-3 font-bold text-5xl">Upload a PDF file</h1>
            <form onSubmit={handleSubmit} className="flex flex-col justify-center align-middle mt-20">
             { !isLoading && <div className=" text-center">
             <input type="file" onChange={(e) => handleOnChange(e)}/>
