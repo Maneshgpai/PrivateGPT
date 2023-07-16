@@ -65,7 +65,7 @@ def upload_file():
 
 @app.route("/api/getDocuments", methods=["GET"])
 def get_documents():
-    document_list = funcs.get_documents_list_function()
+    document_list = funcs.get_documents_list()
     return make_response(jsonify(document_list)), 200
 
 funcs.initialize_index()
