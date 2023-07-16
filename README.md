@@ -45,6 +45,13 @@ or
 
 Navigate to server folder using the terminal 
 
+#### Note:
+
+Create a file named *.env* inside the server folder & place the OPENAI API key
+```bash
+OPENAI_API_KEY=your-openai-api-key
+```
+
 #### 2. Create a Python virtual Environment
 
 Once you're in the server folder, enter the following command to create a virtual env:
@@ -68,5 +75,5 @@ pip install -r requirements.txt
 ```
 #### 4. Running the server
 ```bash
-python3 hello.py
+python3 index.py
 ```
