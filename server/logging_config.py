@@ -2,7 +2,7 @@ import logging
 
 # Configure logging to write messages to stdout and a log file
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler("app.log")  # Specify the log file name here

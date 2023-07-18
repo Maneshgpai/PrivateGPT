@@ -28,6 +28,7 @@ def query_index():
 
 @app.route("/api/uploadFile", methods=["POST"])
 def upload_file():
+    print("Called upload_file() ...........")
     if 'file' not in request.files:
         # return "Please send a POST request with a file", 400
         logger.error("No file detected")
@@ -38,15 +39,21 @@ def upload_file():
         uploaded_file = request.files["file"]
         filename = secure_filename(uploaded_file.filename)
         filepath = os.path.join('documents', os.path.basename(filename))
+    
+        print("Called upload_file(): filename:",filename)
+        print("Called upload_file(): filepath:",filepath)
+    
         uploaded_file.save(filepath)
 
         logger.info(f"File named {filename} has been uploaded")
 
         if request.form.get("filename_as_doc_id", None) is not None:
+            print("entered IF...")
             funcs.insert_into_index(filepath, doc_id=filename)
         else:
+            print("entered ELSE...")
             funcs.insert_into_index(filepath)
-        os.remove(filepath)
+        # os.remove(filepath)
     except Exception as e:
         # cleanup temp file
         if filepath is not None and os.path.exists(filepath):
