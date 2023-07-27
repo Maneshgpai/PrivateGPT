@@ -1,4 +1,4 @@
-# Llama-Index-demo
+# PrivateGPT
 
 Follow the below steps to setup this project
 
