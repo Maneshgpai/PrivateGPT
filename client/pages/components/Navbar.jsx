@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { UserButton } from "@clerk/nextjs";
 
 function Navbar(){
 return (
@@ -16,7 +17,7 @@ return (
       <Link href="/documents" className="border-b-2 border-transparent hover:text-gray-800 dark:hover:text-gray-200 hover:border-blue-500 mx-1.5 sm:mx-6">
         Documents
       </Link>
-
+      <UserButton/>
     </div>
   </nav>
 )}
