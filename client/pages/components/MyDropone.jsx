@@ -1,11 +1,50 @@
-import Image from 'next/image'
 import { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { ArrowUpTrayIcon, XMarkIcon, DocumentIcon} from '@heroicons/react/24/solid'
+import Loading from "./Loading";
 
 const Dropzone = ({ className }) => {
   const [files, setFiles] = useState([])
   const [rejected, setRejected] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const handleSubmit = async e => {
+    e.preventDefault()
+
+    if (!files?.length) return
+
+    setIsLoading(true)
+    const formData = new FormData();
+    files.forEach(file => formData.append('file', file))
+    formData.append('filename_as_doc_id', 'true');
+
+    try{
+    const response = await fetch('http://localhost:8080/api/uploadFile', {
+    mode: 'cors',
+    method: 'POST',
+    body: formData,
+    });
+
+    const responseText = await response.text();
+    console.log(JSON.parse(responseText))
+    if(response.status === 200){
+        setIsLoading(false)
+        window.location.href = '/chat'
+
+    }
+    else {
+      setIsLoading(false)
+      const data = JSON.parse(responseText)
+      setError(data.message)
+    }
+    }
+
+    catch{
+    setIsLoading(false)
+    setError("Something went wrong")
+    }
+  }
 
   const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
     if (acceptedFiles?.length) {
@@ -44,32 +83,15 @@ const Dropzone = ({ className }) => {
     setRejected(files => files.filter(({ file }) => file.name !== name))
   }
 
-  const handleSubmit = async e => {
-    e.preventDefault()
-
-    if (!files?.length) return
-
-    const formData = new FormData()
-    files.forEach(file => formData.append('file', file))
-    formData.append('upload_preset', 'friendsbook')
-
-    const URL = process.env.NEXT_PUBLIC_CLOUDINARY_URL
-    const data = await fetch(URL, {
-      method: 'POST',
-      body: formData
-    }).then(res => res.json())
-
-    console.log(data)
-  }
-
   return (
     <form onSubmit={handleSubmit}>
       <div
         {...getRootProps({
           className: className
         })}
-      >
+        >
         <input {...getInputProps()} />
+        { !isLoading &&
         <div className='flex flex-col items-center justify-center gap-4'>
           <ArrowUpTrayIcon className='w-5 h-5 fill-current' />
           {isDragActive ? (
@@ -81,7 +103,13 @@ const Dropzone = ({ className }) => {
             </div>
           )}
         </div>
+        }
+        {
+            isLoading && <Loading/>
+        }
       </div>
+
+        <p>{error}</p>
 
       {/* Preview */}
       <section className='mt-10'>
