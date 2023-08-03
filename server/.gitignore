@@ -86,3 +86,6 @@ saved_index/
 stored_documents.pkl
 
 app.log
+
+
+pyvenv.cfg
