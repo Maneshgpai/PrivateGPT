@@ -69,13 +69,12 @@ def insert_into_index(doc_file_path, doc_id=None):
     # document = SimpleDirectoryReader(input_files=[doc_file_path]).load_data()[0]
 
     document = SimpleDirectoryReader(input_files=[doc_file_path],filename_as_id=True).load_data()
-
     print("1.funcs.py > insert_into_index: ",doc_id)
 
     # if doc_id is not None:
     #     document.doc_id = doc_id
     
-    print("2.funcs.py > insert_into_index: document:")
+    print("2.funcs.py > insert_into_index: document")
 
     parser = SimpleNodeParser()
     nodes = parser.get_nodes_from_documents(document)
@@ -86,9 +85,11 @@ def insert_into_index(doc_file_path, doc_id=None):
 
 
     # Keep track of stored docs -- llama_index doesn't make this easy
-    # stored_docs[document.doc_id] = document.text[0:200]  # only take the first 200 chars
+    # stored_docs[document[0].doc_id] = document.text[0:200]  # only take the first 200 chars
+    for doc in document:
+        stored_docs[doc.doc_id] = doc.text[0:200]
 
-    print("3.funcs.py > insert_into_index > stored_docs:",stored_docs)
+    print("3.funcs.py > insert_into_index > stored_docs")
 
     with open(pkl_name, "wb") as f:
         pickle.dump(stored_docs, f)
@@ -98,9 +99,8 @@ def insert_into_index(doc_file_path, doc_id=None):
 
 def get_documents_list():
     """Get the list of currently stored documents."""
-    global stored_doc
+    global stored_docs
     documents_list = []
-    print("funcs.py > get_documents_list",stored_docs.items())
     for doc_id, doc_text in stored_docs.items():
         documents_list.append({"id": doc_id, "text": doc_text})
 
