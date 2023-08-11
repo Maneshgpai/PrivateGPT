@@ -16,14 +16,14 @@ from llama_index.node_parser import SimpleNodeParser
 from logging_config import logger
 
 index = None
-stored_docs = {}
+stored_docs = []
 index_name = "./saved_index"
 pkl_name = "stored_documents.pkl"
 
 
 def initialize_index():
     """Create a new global index, or load one from the pre-set path."""
-    global index
+    global index, stored_docs
 
     llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
 
@@ -36,6 +36,10 @@ def initialize_index():
     else:
         index = VectorStoreIndex([], service_context=service_context)
         index.storage_context.persist(persist_dir=index_name)
+
+    if os.path.exists(pkl_name):
+        with open(pkl_name, "rb") as f:
+            stored_docs = pickle.load(f)
 
 def load_index():
     llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
@@ -79,26 +83,29 @@ def query_index(query_text):
 def insert_into_index(docs):
     """Insert new document into global index."""
 
-    global index
+    global index, stored_docs, pkl_name
 
-    document = SimpleDirectoryReader(input_files=docs,filename_as_id=True).load_data()
+    for doc in docs:
+        try:
+            document = SimpleDirectoryReader(input_files=[doc],filename_as_id=True).load_data()
+            parser = SimpleNodeParser.from_defaults(chunk_size=1024, chunk_overlap=20)
+            nodes = parser.get_nodes_from_documents(document)
+            index.insert_nodes(nodes)
+            index.storage_context.persist(persist_dir=index_name)
+        
+        except Exception as e:
+            error = "Error: {}".format(str(e))
+            logger.error(error)
 
-    parser = SimpleNodeParser.from_defaults(chunk_size=1024, chunk_overlap=20)
-    nodes = parser.get_nodes_from_documents(document)
-    # new_index = VectorStoreIndex.from_documents(document,show_progress=True)
-    index.insert_nodes(nodes)
-
-    index.storage_context.persist(persist_dir=index_name)
+        stored_docs.append(document[0].metadata['file_name']) 
+        
+    with open(pkl_name, "wb") as f:
+        pickle.dump(stored_docs, f)
 
     return
 
 
 def get_documents_list():
     """Get the list of currently stored documents."""
-    documents_list = []
-    directory = "./documents"
-    for filename in os.listdir(directory):
-        if os.path.isfile(os.path.join(directory, filename)):
-            documents_list.append(filename)
-
-    return documents_list
+    global stored_docs
+    return stored_docs
