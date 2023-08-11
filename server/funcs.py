@@ -13,6 +13,8 @@ from llama_index.query_engine import RetrieverQueryEngine
 from llama_index.indices.postprocessor import SimilarityPostprocessor
 from llama_index.node_parser import SimpleNodeParser
 
+from logging_config import logger
+
 index = None
 stored_docs = {}
 index_name = "./saved_index"
@@ -21,7 +23,7 @@ pkl_name = "stored_documents.pkl"
 
 def initialize_index():
     """Create a new global index, or load one from the pre-set path."""
-    global index, stored_docs
+    global index
 
     llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
 
@@ -34,9 +36,21 @@ def initialize_index():
     else:
         index = VectorStoreIndex([], service_context=service_context)
         index.storage_context.persist(persist_dir=index_name)
-    if os.path.exists(pkl_name):
-        with open(pkl_name, "rb") as f:
-            stored_docs = pickle.load(f)
+
+def load_index():
+    llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
+
+    # service_context = ServiceContext.from_defaults(chunk_size_limit=512)
+    service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor)
+
+    if os.path.exists(index_name):
+        index = load_index_from_storage(StorageContext.from_defaults(persist_dir=index_name),
+                                        service_context=service_context)
+    else:
+        index = VectorStoreIndex([], service_context=service_context)
+        index.storage_context.persist(persist_dir=index_name)
+
+    return index
 
 
 def query_index(query_text):
@@ -64,40 +78,27 @@ def query_index(query_text):
 
 def insert_into_index(docs):
     """Insert new document into global index."""
-    global index, stored_docs
-    
+
+    global index
+
     document = SimpleDirectoryReader(input_files=docs,filename_as_id=True).load_data()
 
     parser = SimpleNodeParser.from_defaults(chunk_size=1024, chunk_overlap=20)
     nodes = parser.get_nodes_from_documents(document)
-    index = VectorStoreIndex.from_documents(document,show_progress=True)
+    # new_index = VectorStoreIndex.from_documents(document,show_progress=True)
     index.insert_nodes(nodes)
 
     index.storage_context.persist(persist_dir=index_name)
-
-
-    # Keep track of stored docs -- llama_index doesn't make this easy
-    # stored_docs[document[0].doc_id] = document.text[0:200]  # only take the first 200 chars
-    for doc in document:
-        stored_docs[doc.doc_id] = doc.text[0:200]
-
-    with open(pkl_name, "wb") as f:
-        pickle.dump(stored_docs, f)
 
     return
 
 
 def get_documents_list():
     """Get the list of currently stored documents."""
-    global stored_docs
     documents_list = []
-    for doc_id, doc_text in stored_docs.items():
-        documents_list.append({"id": doc_id, "text": doc_text})
+    directory = "./documents"
+    for filename in os.listdir(directory):
+        if os.path.isfile(os.path.join(directory, filename)):
+            documents_list.append(filename)
 
     return documents_list
-
-# init the global index
-# if __name__ == "__main__":
-# print("Initializing index...")
-# initialize_index()
-# print("Initialised index")

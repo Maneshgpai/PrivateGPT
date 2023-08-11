@@ -44,7 +44,6 @@ def upload_files():
             file.save(filepath)
             docs.append(filepath)
         
-        print(docs)
         funcs.insert_into_index(docs)
 
     except Exception as e:
