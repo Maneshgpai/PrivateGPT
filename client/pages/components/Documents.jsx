@@ -39,7 +39,7 @@ function Documents() {
             <h1 className='text-center py-3 font-bold text-5xl'>Uploaded Documents</h1>
             <ul className=' mt-6 text-lg'>
             {data.map((ele, index) => (
-                    <li key={index}>{index+1}. {ele.id}</li>
+                    <li key={index}>{index+1}. {ele}</li>
             ))}
             </ul>
         </div>
