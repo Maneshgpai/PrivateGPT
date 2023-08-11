@@ -27,47 +27,33 @@ def query_index():
 
 
 @app.route("/api/uploadFile", methods=["POST"])
-def upload_file():
-    print("Called upload_file() ...........")
+def upload_files():
     if 'file' not in request.files:
-        # return "Please send a POST request with a file", 400
         logger.error("No file detected")
-        return jsonify({"message":"Please send a File"}), 400
+        return jsonify({"message":"Please send one or more Files"}), 400
     
-    filepath = None
+    files = request.files.getlist("file")
+
+    docs = []
     try:
-        uploaded_file = request.files["file"]
-        filename = secure_filename(uploaded_file.filename)
-        filepath = os.path.join('documents', os.path.basename(filename))
-    
-        print("Called upload_file(): filename:",filename)
-        print("Called upload_file(): filepath:",filepath)
-    
-        uploaded_file.save(filepath)
+        for file in files:
+            filename = secure_filename(file.filename)
+            filepath = os.path.join('documents', os.path.basename(filename))
+            if filepath is not None and os.path.exists(filepath):
+                os.remove(filepath)
+            file.save(filepath)
+            docs.append(filepath)
+        
+        funcs.insert_into_index(docs)
 
-        logger.info(f"File named {filename} has been uploaded")
-
-        if request.form.get("filename_as_doc_id", None) is not None:
-            print("entered IF...")
-            funcs.insert_into_index(filepath, doc_id=filename)
-        else:
-            print("entered ELSE...")
-            funcs.insert_into_index(filepath)
-        # os.remove(filepath)
     except Exception as e:
-        # cleanup temp file
-        if filepath is not None and os.path.exists(filepath):
-            os.remove(filepath)
-        error = "Error: {}".format(str(e))
-        logger.error(error)
-        return jsonify({"message":error}), 400
+            error = "Error: {}".format(str(e))
+            logger.error(error)
+            return jsonify({"message":error}), 400
 
+    logger.info(f"Files {', '.join(docs)} inserted")
+    return jsonify({"message":"Files inserted!"}), 200
 
-    # cleanup temp file
-    # if filepath is not None and os.path.exists(filepath):
-    #     os.remove(filepath)
-    logger.info(f"{filename} inserted")
-    return jsonify({"message":"File inserted!"}), 200
 
 
 @app.route("/api/getDocuments", methods=["GET"])

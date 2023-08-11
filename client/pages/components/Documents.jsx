@@ -4,11 +4,12 @@ import Loading from './Loading'
 function Documents() {
     const [data, setData] = useState(null)
     const [isLoading, setLoading] = useState(false)
+    const url = process.env.NEXT_PUBLIC_SERVER_URL
 
     useEffect(()=>{
         setLoading(true)
         try{
-        fetch("http://localhost:8080//api/getDocuments", {
+        fetch(`${url}/api/getDocuments`, {
             mode: 'cors',
             method: 'GET',
         })
@@ -38,7 +39,7 @@ function Documents() {
             <h1 className='text-center py-3 font-bold text-5xl'>Uploaded Documents</h1>
             <ul className=' mt-6 text-lg'>
             {data.map((ele, index) => (
-                    <li key={index}>{index+1}. {ele.id}</li>
+                    <li key={index}>{index+1}. {ele}</li>
             ))}
             </ul>
         </div>
