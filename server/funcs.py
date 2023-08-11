@@ -7,7 +7,7 @@ load_dotenv()
 os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 
 from langchain import OpenAI
-from llama_index import SimpleDirectoryReader, LLMPredictor, get_response_synthesizer, GPTVectorStoreIndex, ServiceContext, StorageContext, load_index_from_storage
+from llama_index import SimpleDirectoryReader, LLMPredictor, get_response_synthesizer, VectorStoreIndex, ServiceContext, StorageContext, load_index_from_storage
 from llama_index.retrievers import VectorIndexRetriever
 from llama_index.query_engine import RetrieverQueryEngine
 from llama_index.indices.postprocessor import SimilarityPostprocessor
@@ -32,7 +32,7 @@ def initialize_index():
         index = load_index_from_storage(StorageContext.from_defaults(persist_dir=index_name),
                                         service_context=service_context)
     else:
-        index = GPTVectorStoreIndex([], service_context=service_context)
+        index = VectorStoreIndex([], service_context=service_context)
         index.storage_context.persist(persist_dir=index_name)
     if os.path.exists(pkl_name):
         with open(pkl_name, "rb") as f:
@@ -62,23 +62,15 @@ def query_index(query_text):
     return response
 
 
-def insert_into_index(doc_file_path, doc_id=None):
+def insert_into_index(docs):
     """Insert new document into global index."""
     global index, stored_docs
     
-    # document = SimpleDirectoryReader(input_files=[doc_file_path]).load_data()[0]
+    document = SimpleDirectoryReader(input_files=docs,filename_as_id=True).load_data()
 
-    document = SimpleDirectoryReader(input_files=[doc_file_path],filename_as_id=True).load_data()
-    print("1.funcs.py > insert_into_index: ",doc_id)
-
-    # if doc_id is not None:
-    #     document.doc_id = doc_id
-    
-    print("2.funcs.py > insert_into_index: document")
-
-    parser = SimpleNodeParser()
+    parser = SimpleNodeParser.from_defaults(chunk_size=1024, chunk_overlap=20)
     nodes = parser.get_nodes_from_documents(document)
-    index = GPTVectorStoreIndex.from_documents(document,show_progress=True)
+    index = VectorStoreIndex.from_documents(document,show_progress=True)
     index.insert_nodes(nodes)
 
     index.storage_context.persist(persist_dir=index_name)
@@ -88,8 +80,6 @@ def insert_into_index(doc_file_path, doc_id=None):
     # stored_docs[document[0].doc_id] = document.text[0:200]  # only take the first 200 chars
     for doc in document:
         stored_docs[doc.doc_id] = doc.text[0:200]
-
-    print("3.funcs.py > insert_into_index > stored_docs")
 
     with open(pkl_name, "wb") as f:
         pickle.dump(stored_docs, f)

@@ -28,45 +28,31 @@ def query_index():
 
 @app.route("/api/uploadFile", methods=["POST"])
 def upload_files():
-    print("Called upload_file() ...........")
     if 'file' not in request.files:
         logger.error("No file detected")
         return jsonify({"message":"Please send one or more Files"}), 400
     
     files = request.files.getlist("file")
 
-    filenames = []
-    for file in files:
-        filepath = None
-        try:
+    docs = []
+    try:
+        for file in files:
             filename = secure_filename(file.filename)
             filepath = os.path.join('documents', os.path.basename(filename))
-        
-            print("Called upload_file(): filename:",filename)
-            print("Called upload_file(): filepath:",filepath)
-        
-            file.save(filepath)
-
-            logger.info(f"File named {filename} has been uploaded")
-
-            if request.form.get("filename_as_doc_id", None) is not None:
-                print("entered IF...")
-                funcs.insert_into_index(filepath, doc_id=filename)
-            else:
-                print("entered ELSE...")
-                funcs.insert_into_index(filepath)
-
-            filenames.append(filename)
-
-        except Exception as e:
-            # cleanup temp file
             if filepath is not None and os.path.exists(filepath):
                 os.remove(filepath)
+            file.save(filepath)
+            docs.append(filepath)
+        
+        print(docs)
+        funcs.insert_into_index(docs)
+
+    except Exception as e:
             error = "Error: {}".format(str(e))
             logger.error(error)
             return jsonify({"message":error}), 400
 
-    logger.info(f"Files {', '.join(filenames)} inserted")
+    logger.info(f"Files {', '.join(docs)} inserted")
     return jsonify({"message":"Files inserted!"}), 200
 
 
