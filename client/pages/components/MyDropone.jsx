@@ -18,9 +18,10 @@ const Dropzone = ({ className }) => {
     const formData = new FormData();
     files.forEach(file => formData.append('file', file))
     formData.append('filename_as_doc_id', 'true');
+    const url = process.env.NEXT_PUBLIC_SERVER_URL
 
     try{
-    const response = await fetch('http://localhost:8080/api/uploadFile', {
+    const response = await fetch(`${url}/api/uploadFile`, {
     mode: 'cors',
     method: 'POST',
     body: formData,
@@ -99,7 +100,6 @@ const Dropzone = ({ className }) => {
           ) : (
             <div>
             <p>Drag & drop files here, or click to select files</p>
-            <input type="file"/>
             </div>
           )}
         </div>

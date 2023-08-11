@@ -11,6 +11,7 @@ export default function Chat() {
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const url = process.env.NEXT_PUBLIC_SERVER_URL
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -25,7 +26,7 @@ export default function Chat() {
   const sendMessage = async (text) => {
     setIsLoading(true);
 
-    const response = await fetch(`http://localhost:8080/api/query?text=${text}`)
+    const response = await fetch(`${url}/api/query?text=${text}`)
     const data = await response.json()
     setChatLog((preChatLog)=>[...preChatLog, {type:"bot", message:data.message}]);
     setIsLoading(false)
