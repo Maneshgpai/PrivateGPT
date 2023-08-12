@@ -92,12 +92,11 @@ def insert_into_index(docs):
             nodes = parser.get_nodes_from_documents(document)
             index.insert_nodes(nodes)
             index.storage_context.persist(persist_dir=index_name)
+            stored_docs.append(document[0].metadata['file_name']) 
         
         except Exception as e:
             error = "Error: {}".format(str(e))
             logger.error(error)
-
-        stored_docs.append(document[0].metadata['file_name']) 
         
     with open(pkl_name, "wb") as f:
         pickle.dump(stored_docs, f)
