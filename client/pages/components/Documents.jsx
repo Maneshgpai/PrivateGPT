@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import Loading from './Loading'
 
 function Documents() {
-    const [data, setData] = useState(null)
+    const [data, setData] = useState([])
     const [isLoading, setLoading] = useState(false)
     const url = process.env.NEXT_PUBLIC_SERVER_URL
 
