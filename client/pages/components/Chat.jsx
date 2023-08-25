@@ -1,75 +1,141 @@
-import { useState, useEffect } from "react";
-import { Inter } from 'next/font/google'
-import styles from '@/styles/Home.module.css'
-import TypingAnimation from "./TypingAnimation";
-import Link from "next/link";
-import Navbar from "./Navbar";
-
-const inter = Inter({ subsets: ['latin'] })
+import { useState } from "react";
+import OpenAIKeyForm from "./OpenAIKeyForm";
+import FileUpload from "./FileUpload";
+import TextSnippet from "./TextSnippet";
 
 export default function Chat() {
-  const [inputValue, setInputValue] = useState("");
-  const [chatLog, setChatLog] = useState([]);
+  const [showChatBox, setShowChatBox] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const url = process.env.NEXT_PUBLIC_SERVER_URL
+  const [fileSummaries, setFileSummaries] = useState([]);
+  const [textSummaries, setTextSummaries] = useState([]);
+  const [activeTab, setActiveTab] = useState("file");
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
 
-    setChatLog((prevChatLog) => [...prevChatLog, { type: 'user', message: inputValue }])
+  const handleOpenAIKeyResult = (result) => {
+    setShowChatBox(result);
+  };
 
-    sendMessage(inputValue);
-    
-    setInputValue('');
-  }
+  const handleFileUploadResult = (result) => {
+    if (result) {
+      setFileSummaries(result);
+    }
+  };
 
-  const sendMessage = async (text) => {
-    setIsLoading(true);
-
-    const response = await fetch(`${url}/api/query?text=${text}`)
-    const data = await response.json()
-    setChatLog((preChatLog)=>[...preChatLog, {type:"bot", message:data.message}]);
-    setIsLoading(false)
-  }
+  const handleTextSnippetResult = (result) => {
+    if (result) {
+      setTextSummaries(result);
+    }
+  };
 
   return (
-    <div className="container mx-auto">
-    <div className="fixed left-0 top-0">
-    {/* <svg fill="#000000" height="200px" width="200px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 219.151 219.151" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path d="M109.576,219.151c60.419,0,109.573-49.156,109.573-109.576C219.149,49.156,169.995,0,109.576,0S0.002,49.156,0.002,109.575 C0.002,169.995,49.157,219.151,109.576,219.151z M109.576,15c52.148,0,94.573,42.426,94.574,94.575 c0,52.149-42.425,94.575-94.574,94.576c-52.148-0.001-94.573-42.427-94.573-94.577C15.003,57.427,57.428,15,109.576,15z"></path> <path d="M94.861,156.507c2.929,2.928,7.678,2.927,10.606,0c2.93-2.93,2.93-7.678-0.001-10.608l-28.82-28.819l83.457-0.008 c4.142-0.001,7.499-3.358,7.499-7.502c-0.001-4.142-3.358-7.498-7.5-7.498l-83.46,0.008l28.827-28.825 c2.929-2.929,2.929-7.679,0-10.607c-1.465-1.464-3.384-2.197-5.304-2.197c-1.919,0-3.838,0.733-5.303,2.196l-41.629,41.628 c-1.407,1.406-2.197,3.313-2.197,5.303c0.001,1.99,0.791,3.896,2.198,5.305L94.861,156.507z"></path> </g> </g></svg> */}
-    </div>
-      <div className="flex flex-col h-screen">
-        <Navbar/>
-        <h1 className=" text-center py-3 font-bold text-5xl">Chat with Data</h1>
-        <div className="flex-grow p-6 lg:w-2/3 mx-auto">
-          <div className="flex flex-col space-y-4">
-            {
-                chatLog.map((message, index) => (
-                <div key={index} className={`flex ${
-                    message.type === 'user' ? 'justify-end' : 'justify-start'
-                    }`}>
-                    <div className={`${
-                        message.type === 'user' ? 'bg-purple-500' : 'bg-gray-800'
-                        } rounded-lg p-4 text-white max-w-sm`}>
-                        {message.message}
-                    </div>
-                </div>))}
-                {
-                    isLoading &&
-                    <div key={chatLog.length} className="flex justify-start">
-                        <div className="bg-gray-800 rounded-lg p-4 text-white max-w-sm">
-                            <TypingAnimation />
-                        </div>
-                    </div>
-                }
+    <div
+      className="container mx-auto bg-gray-900  flex flex-col"
+      style={{ minHeight: `calc(100vh - ${3}rem)` }}
+    >
+      <div className="border-gray-100 dark:border-gray-600 shadow-none sticky top-0">
+        <h1 className="text-center py-3 font-bold text-xl text-gray-300">
+          {/* Chat with your PDF */}
+        </h1>
+      </div>
+      {showChatBox ? (
+        <>
+          <div className="flex items-center justify-center mb-4">
+            <div
+              role="tablist"
+              aria-orientation="horizontal"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-gray-800 p-1 text-gray-300"
+              tabIndex="0"
+              data-orientation="horizontal"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "file"}
+                onClick={() => handleTabChange("file")}
+                className={`${
+                  activeTab === "file"
+                    ? "bg-gray-900 text-foreground shadow-sm"
+                    : ""
+                } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
+                tabIndex="-1"
+                data-orientation="horizontal"
+                data-radix-collection-item=""
+              >
+                Upload PDF
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "text"}
+                onClick={() => handleTabChange("text")}
+                className={`${
+                  activeTab === "text"
+                    ? "bg-gray-900 text-foreground shadow-sm"
+                    : ""
+                } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
+                tabIndex="0"
+                data-orientation="horizontal"
+                data-radix-collection-item=""
+              >
+                Paste Snippet
+              </button>
             </div>
-        </div>
-        <form onSubmit={handleSubmit} className="flex-none p-6 ">
-          <div className="flex rounded-lg border border-gray-700 bg-gray-800 lg:w-2/3 mx-auto">  
-            <input type="text" className="flex-grow px-4 py-2 bg-transparent text-white focus:outline-none" placeholder="Type your message..." value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
-            <button type="submit" disabled={inputValue<=0} className="bg-purple-500 rounded-lg px-4 py-2 text-white font-semibold focus:outline-none hover:bg-purple-600 transition-colors duration-300 disabled:bg-gray-600">Send</button>
-        </div>
-        </form>
-        </div>
+          </div>
+
+          {activeTab === "file" ? (
+            <FileUpload result={handleFileUploadResult} />
+          ) : (
+            <TextSnippet result={handleTextSnippetResult} />
+          )}
+          {activeTab === "file" &&
+            fileSummaries.map((summary, index) => (
+              <div
+                className="mt-4 flex w-full flex-col items-center"
+                key={index}
+              >
+                <div className="w-4/5">
+                  <div className="w-full py-2 flex flex-row justify-between text-sm relative cursor-pointer rounded-md font-bold text-gray-300 hover:text-gray-300">
+                    <div className="flex flex-row">
+                      <span className="ml-1">
+                        {summary.filename ? summary.filename : ""}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <span>{summary.summary}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          {activeTab === "text" &&
+            textSummaries.map((summary, index) => (
+              <div
+                className="mt-4 flex w-full flex-col items-center"
+                key={index}
+              >
+                <div className="w-4/5">
+                  <div className="w-full py-2 flex flex-row justify-between text-sm relative cursor-pointer rounded-md font-bold text-gray-300 hover:text-gray-300">
+                    <div className="flex flex-row">
+                      <span className="ml-1">
+                        {summary.filename ? summary.filename : ""}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <span>{summary.summary}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </>
+      ) : (
+        <OpenAIKeyForm result={handleOpenAIKeyResult} />
+      )}
     </div>
-  )
+  );
 }
