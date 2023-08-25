@@ -1,11 +1,25 @@
-import FileUpload from "./components/FileUpload"
-import Navbar from "./components/Navbar"
-import MyDropzone from "./components/MyDropone"
+import Header from "./components/Header";
+import Hero from "./components/Hero";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
+import Chat from "./components/Chat";
+import Layout from "./components/Layout";
+
 export default function Home() {
   return (
-    <div>
-      <Navbar/>
-      <MyDropzone className=" p-16 mt-10 border border-neutral-200 w-2/3 mx-auto"/>
-    </div>
-  )
+    <>
+      <SignedIn>
+        <div className="bg-gray-900">
+          <Layout>
+            <Chat />
+          </Layout>
+        </div>
+      </SignedIn>
+      <SignedOut>
+        <div>
+          <Header />
+          <Hero />
+        </div>
+      </SignedOut>
+    </>
+  );
 }

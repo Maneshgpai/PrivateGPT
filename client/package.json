@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^4.23.1",
+    "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "autoprefixer": "10.4.14",
+    "dotenv": "^16.3.1",
     "eslint": "8.44.0",
     "eslint-config-next": "13.4.9",
     "next": "13.4.9",
@@ -19,6 +21,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-dropzone": "^14.2.3",
-    "tailwindcss": "3.3.2"
+    "react-transition-group": "^4.4.5",
+    "tailwindcss": "^3.3.3"
   }
 }
