@@ -56,18 +56,22 @@ def upload_files():
         for file in files:
             if file:
                 filename = secure_filename(file.filename)
-                filepath = os.path.join(
-                    'documents', os.path.basename(filename))
-
+                filepath = os.path.join('documents', filename)
                 options = funcs.get_options(request)
-                summary = funcs.summarize_pdf(filepath, options)
-                summaries.append({"filename": filename, "summary": summary})
+
+                try:
+                    file.save(filepath)
+                    summary = funcs.summarize_pdf(filepath, options)
+                    summaries.append(
+                        {"filename": filename, "summary": summary})
+                finally:
+                    os.remove(filepath)
+        return jsonify(summaries), 200
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
         return jsonify({"message": error}), 400
 
-    return jsonify(summaries), 200
 
 @app.route("/api/summarise-text", methods=["POST"])
 def summarise_text():
@@ -77,16 +81,16 @@ def summarise_text():
         if 'text' not in data:
             return jsonify({'error': 'Text not found in request'}), 400
         text = data['text']
-    
 
         options = funcs.get_options(request)
         summary = funcs.summarize_text(text, options)
-        
+
         return jsonify([{"summary": summary}]), 200
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
         return jsonify({"message": error}), 400
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=8080)
