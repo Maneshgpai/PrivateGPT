@@ -18,7 +18,7 @@ const Dropzone = ({ className }) => {
     const formData = new FormData();
     files.forEach(file => formData.append('file', file))
     formData.append('filename_as_doc_id', 'true');
-    const url = process.env.NEXT_PUBLIC_SERVER_URL
+    const url = process.env.NEXT_PUBLIC_API_URL
 
     try{
     const response = await fetch(`${url}/api/uploadFile`, {
@@ -28,7 +28,7 @@ const Dropzone = ({ className }) => {
     });
 
     const responseText = await response.text();
-    console.log(JSON.parse(responseText))
+    // console.log(JSON.parse(responseText))
     if(response.status === 200){
         setIsLoading(false)
         window.location.href = '/chat'

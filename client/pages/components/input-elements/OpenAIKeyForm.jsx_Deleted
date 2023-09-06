@@ -39,30 +39,44 @@ function OpenAIForm({ result }) {
     setIsLoading(true);
     setApiKeyError(null);
 
-    const headers = new Headers();
-    headers.append("x-open-ai-key", openAIKey);
+    localStorage.setItem("openAIKey", openAIKey);
+    window.dispatchEvent(new Event("openAIKeyUpdate"));
+    setIsLoading(false);
 
-    const options = {
-      method: "GET",
-      headers: headers,
-    };
+    // const headers = new Headers();
+    // headers.append("x-open-ai-key", openAIKey);
+    // headers.append("llmModel", "gpt-3.5-turbo");
+    // headers.append("llmTemp", 0);
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/set-open-ai-key`,
-      options
-    );
+    // const options = {
+    //   method: "GET",
+    //   headers: headers,
+    // };
 
-    if (response.status === 200) {
-      const data = await response.json();
-      localStorage.setItem("openAIKey", openAIKey);
-      window.dispatchEvent(new Event("openAIKeyUpdate"));
-      setIsLoading(false);
-    } else {
-      setIsLoading(false);
-      setApiKeyError(
-        "Failed to get response from the API. Check your API key."
-      );
-    }
+    // const response = await fetch(
+    //   `${process.env.NEXT_PUBLIC_API_URL}/api/set-open-ai-key`,
+    //   options
+    // );
+    // 
+    // if (response.status === 200) {
+    //   const data = await response.json();
+    //   localStorage.setItem("openAIKey", openAIKey);
+    //   window.dispatchEvent(new Event("openAIKeyUpdate"));
+    //   setIsLoading(false);
+    // }
+    // else if (response.status === 500) {
+    //   const json = await response.json();
+    //   console.log("json:",json)
+    //   setApiKeyError(
+    //     "some error!"
+    //   );
+    //   setIsLoading(false);
+    // } else {
+    //   setIsLoading(false);
+    //   setApiKeyError(
+    //     "Failed to get response from the API. Check your API key."
+    //   );
+    // }
   };
 
   return (

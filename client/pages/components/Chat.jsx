@@ -1,22 +1,22 @@
 import { useState } from "react";
-import OpenAIKeyForm from "./OpenAIKeyForm";
-import FileUpload from "./FileUpload";
-import TextSnippet from "./TextSnippet";
+// import OpenAIKeyForm from "./input-elements/OpenAIKeyForm";
+import FileUpload from "./input-elements/FileUpload";
+import TextSnippet from "./input-elements/TextSnippet";
 
 export default function Chat() {
   const [showChatBox, setShowChatBox] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fileSummaries, setFileSummaries] = useState([]);
   const [textSummaries, setTextSummaries] = useState([]);
-  const [activeTab, setActiveTab] = useState("file");
+  const [activeTab, setActiveTab] = useState("text");
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
-  const handleOpenAIKeyResult = (result) => {
-    setShowChatBox(result);
-  };
+  // const handleOpenAIKeyResult = (result) => {
+  //   setShowChatBox(result);
+  // };
 
   const handleFileUploadResult = (result) => {
     if (result) {
@@ -40,7 +40,7 @@ export default function Chat() {
           {/* Chat with your PDF */}
         </h1>
       </div>
-      {showChatBox ? (
+      {/* {showChatBox ? ( */}
         <>
           <div className="flex items-center justify-center mb-4">
             <div
@@ -50,22 +50,6 @@ export default function Chat() {
               tabIndex="0"
               data-orientation="horizontal"
             >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "file"}
-                onClick={() => handleTabChange("file")}
-                className={`${
-                  activeTab === "file"
-                    ? "bg-gray-900 text-foreground shadow-sm"
-                    : ""
-                } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
-                tabIndex="-1"
-                data-orientation="horizontal"
-                data-radix-collection-item=""
-              >
-                Upload PDF
-              </button>
               <button
                 type="button"
                 role="tab"
@@ -80,7 +64,23 @@ export default function Chat() {
                 data-orientation="horizontal"
                 data-radix-collection-item=""
               >
-                Paste Snippet
+                Paste Text
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "file"}
+                onClick={() => handleTabChange("file")}
+                className={`${
+                  activeTab === "file"
+                    ? "bg-gray-900 text-foreground shadow-sm"
+                    : ""
+                } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
+                tabIndex="-1"
+                data-orientation="horizontal"
+                data-radix-collection-item=""
+              >
+                Upload File
               </button>
             </div>
           </div>
@@ -133,9 +133,6 @@ export default function Chat() {
               </div>
             ))}
         </>
-      ) : (
-        <OpenAIKeyForm result={handleOpenAIKeyResult} />
-      )}
     </div>
   );
 }

@@ -16,10 +16,10 @@ export default function Hero() {
       <div className="mx-auto max-w-2xl py-8 sm:py-12 lg:py-14">
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-            Chat with your PDF
+            MedCoder
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-600">
-            Chat with your PDF and ask questions get answers.
+            Take your time back from RCM complexities, produce efficient codes and get claims approved faster.
           </p>
         </div>
         <div className="text-center">
@@ -32,6 +32,13 @@ export default function Hero() {
             </a>
           </div>
         </div>
+
+        <div className="text-center">
+          <p className="mt-6 text-lg leading-8 text-gray-600">
+            <a href="/sign-in">Have an account? Sign in</a>
+          </p>
+        </div>
+        
       </div>
 
       <div
