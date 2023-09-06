@@ -1,0 +1,64 @@
+2023-09-06 13:40:07,720 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2023-09-06 13:40:07,720 [INFO] [33mPress CTRL+C to quit[0m
+2023-09-06 13:40:07,723 [INFO]  * Restarting with stat
+2023-09-06 13:40:10,313 [WARNING]  * Debugger is active!
+2023-09-06 13:40:10,314 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:40:48,745 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/index.py', reloading
+2023-09-06 13:40:49,147 [INFO]  * Restarting with stat
+2023-09-06 13:40:51,790 [WARNING]  * Debugger is active!
+2023-09-06 13:40:51,790 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:41:03,673 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/functions/openai_funcs.py', reloading
+2023-09-06 13:41:04,074 [INFO]  * Restarting with stat
+2023-09-06 13:41:07,112 [WARNING]  * Debugger is active!
+2023-09-06 13:41:07,113 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:41:26,817 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/functions/openai_funcs.py', reloading
+2023-09-06 13:41:27,203 [INFO]  * Restarting with stat
+2023-09-06 13:41:29,692 [WARNING]  * Debugger is active!
+2023-09-06 13:41:29,693 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:41:31,602 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/functions/openai_funcs.py', reloading
+2023-09-06 13:41:32,021 [INFO]  * Restarting with stat
+2023-09-06 13:41:34,741 [WARNING]  * Debugger is active!
+2023-09-06 13:41:34,742 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:41:40,527 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/functions/openai_funcs.py', reloading
+2023-09-06 13:41:40,898 [INFO]  * Restarting with stat
+2023-09-06 13:41:43,777 [WARNING]  * Debugger is active!
+2023-09-06 13:41:43,778 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:41:46,911 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/functions/openai_funcs.py', reloading
+2023-09-06 13:41:47,297 [INFO]  * Restarting with stat
+2023-09-06 13:41:49,752 [WARNING]  * Debugger is active!
+2023-09-06 13:41:49,752 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:41:52,912 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/functions/openai_funcs.py', reloading
+2023-09-06 13:41:53,297 [INFO]  * Restarting with stat
+2023-09-06 13:41:55,786 [WARNING]  * Debugger is active!
+2023-09-06 13:41:55,787 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:42:06,408 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/functions/openai_funcs.py', reloading
+2023-09-06 13:42:06,833 [INFO]  * Restarting with stat
+2023-09-06 13:42:09,270 [WARNING]  * Debugger is active!
+2023-09-06 13:42:09,271 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:46:11,900 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/index.py', reloading
+2023-09-06 13:46:12,486 [INFO]  * Restarting with stat
+2023-09-06 13:46:15,838 [WARNING]  * Debugger is active!
+2023-09-06 13:46:15,839 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:46:21,600 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/index.py', reloading
+2023-09-06 13:46:21,946 [INFO]  * Restarting with stat
+2023-09-06 13:46:24,414 [WARNING]  * Debugger is active!
+2023-09-06 13:46:24,415 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:46:27,712 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/index.py', reloading
+2023-09-06 13:46:28,059 [INFO]  * Restarting with stat
+2023-09-06 13:46:31,453 [WARNING]  * Debugger is active!
+2023-09-06 13:46:31,454 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:46:33,422 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/index.py', reloading
+2023-09-06 13:46:33,780 [INFO]  * Restarting with stat
+2023-09-06 13:46:36,717 [WARNING]  * Debugger is active!
+2023-09-06 13:46:36,718 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:46:40,109 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/index.py', reloading
+2023-09-06 13:46:40,462 [INFO]  * Restarting with stat
+2023-09-06 13:46:43,573 [WARNING]  * Debugger is active!
+2023-09-06 13:46:43,574 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 13:46:45,419 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/index.py', reloading
+2023-09-06 13:46:45,795 [INFO]  * Restarting with stat
+2023-09-06 13:46:48,347 [WARNING]  * Debugger is active!
+2023-09-06 13:46:48,348 [INFO]  * Debugger PIN: 471-664-203
+2023-09-06 14:23:17,615 [INFO]  * Detected change in '/home/john/Documents/GitHub/llama-index-demo/server/functions/openai_funcs.py', reloading
+2023-09-06 14:23:18,169 [INFO]  * Restarting with stat

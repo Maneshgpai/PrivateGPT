@@ -1,11 +1,12 @@
 import { useState } from "react";
 import React from "react";
-import Loading from "./Loader";
 
 function TextSnippet({ result }) {
   const [text, setText] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  var selectedCodeset = process.env.NEXT_PUBLIC_DEFAULT_CODESET
+  var selectedPhysicianType = process.env.NEXT_PUBLIC_DEFAULT_PHYSICIAN_TYPE
 
   const handleSubmit = async (e) => {
     setError(false);
@@ -17,12 +18,23 @@ function TextSnippet({ result }) {
 
     try {
       const headers = new Headers();
-      headers.append("x-open-ai-key", localStorage.getItem("openAIKey"));
       headers.append("Content-Type", "application/json");
 
-      const selectedModel = JSON.parse(localStorage.getItem("selectedModel"));
+      
+      if (localStorage.getItem("selectedCodeset") !== null && localStorage.getItem("selectedCodeset") !== undefined) {
+        selectedCodeset = JSON.parse(localStorage.getItem("selectedCodeset")).name;
+      }
+      
+      if (localStorage.getItem("selectedPhysicianType") !== null && localStorage.getItem("selectedPhysicianType") !== undefined) {
+        selectedPhysicianType = JSON.parse(localStorage.getItem("selectedPhysicianType")).name;
+      }
+      
+      console.log("selectedCodeset:",selectedCodeset)
+      console.log("selectedPhysicianType:",selectedPhysicianType)
+
       const queryParams = new URLSearchParams();
-      queryParams.append("model", selectedModel.name);
+      queryParams.append("selectedCodeset", selectedCodeset);
+      queryParams.append("selectedPhysicianType", selectedCodeset);
 
       const response = await fetch(
         `${
@@ -39,15 +51,17 @@ function TextSnippet({ result }) {
       if (response.status === 200) {
         const data = await response.json();
         setIsLoading(false);
+        console.log("In TextSnippet.jsx > data:",data);
         result(data);
       } else {
-        setIsLoading(false);
+        const responseText = await response.text();
         const data = JSON.parse(responseText);
+        setIsLoading(false);
         setError(data.message);
       }
     } catch (e) {
       setIsLoading(false);
-      setError("Something went wrong");
+      setError(e.message);
     }
   };
 
@@ -68,8 +82,8 @@ function TextSnippet({ result }) {
               id="text-snippet"
               name="text-snippet"
               type="input"
-              placeholder="Enter text snippet"
-              rows="4"
+              placeholder="Paste relevant text from medical note"
+              rows="20"
               className="rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               onChange={(e) => handleOnChange(e)}
             />
@@ -79,7 +93,7 @@ function TextSnippet({ result }) {
                 disabled={!text}
                 className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
               >
-                {!isLoading ? "Submit" : "Submitting.."}
+                {!isLoading ? "Submit" : "Loading.."}
               </button>
             </div>
           </form>

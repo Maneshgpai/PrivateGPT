@@ -5,9 +5,6 @@ export default function App({ Component, pageProps }) {
   return (
     <ClerkProvider
       appearance={{
-        elements: {
-          footer: "hidden",
-        },
       }}
     >
       <Component {...pageProps} />

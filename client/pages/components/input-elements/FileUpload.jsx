@@ -1,6 +1,6 @@
 import { useState } from "react";
 import React from "react";
-import Loading from "./Loader";
+import Loading from "../Loader";
 
 function FileUpload({ result }) {
   const [isLoading, setIsLoading] = useState(false);

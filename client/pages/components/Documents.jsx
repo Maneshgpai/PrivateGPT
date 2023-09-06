@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import Loading from './Loading'
+import Loading from './Loader'
 
 function Documents() {
     const [data, setData] = useState([])
     const [isLoading, setLoading] = useState(false)
-    const url = process.env.NEXT_PUBLIC_SERVER_URL
+    const url = process.env.NEXT_PUBLIC_API_URL
 
     useEffect(()=>{
         setLoading(true)
@@ -17,7 +17,7 @@ function Documents() {
         .then((data) => {
             setData(data)
             setLoading(false)
-            console.log(data)
+            // console.log(data)
         })}
         catch{
             setData(["Failed to fetch"])
