@@ -73,7 +73,6 @@ def upload_files():
         logger.error(error)
         return jsonify({"message": error}), 400
 
-    return jsonify(summaries), 200
 
 @app.route("/api/summarise-text", methods=["POST"])
 def summarise_text():
@@ -158,6 +157,7 @@ def summarise_text():
         error = "Error: {}".format(str(e))
         logger.error(error)
         return jsonify({"message": error}), 400
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=8080)
