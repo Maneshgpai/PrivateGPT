@@ -7,6 +7,10 @@ Download & Install the below tools
 #### 1. [Node Js](https://nodejs.org/en)
 #### 2. [Python](https://www.python.org/downloads/)
 #### 3. [Git](https://git-scm.com/downloads)
+#### 3. [Python Virtual Env](https://pypi.org/project/virtualenv/)
+```bash
+python3 -m pip install --user virtualenv
+```
 
 ## Cloning the repo
 Open any terminal & run the below code in to clone the repo in your system.
@@ -21,59 +25,59 @@ This is built with [Next.js](https://nextjs.org/) framework, which is based on [
 
 #### 1. Navigate to client folder
 ```bash
-cd llama-index-demo
-cd client
+cd PrivateGPT\client
 ```
 #### 2. Install the dependencies
 ```bash
 npm install
 ```
 
-#### 3. Run the development Server
+#### 3. Paste client .env file in client folder
+
+
+#### 4. Run the development Server
 ```bash
 npm run dev
 ```
 
-Now site can be accessed at [http://localhost:3000](http://localhost:3000).
+## Running backend Flask Server
 
-## Running the Flask Server
+#### 5. Navigate to server folder
+Open a new terminal
 
-#### 1. Navigate to server folder
-Open a new terminal in the server folder of *llama-index-demo*
-
-or
-
-Navigate to server folder using the terminal 
-
-#### Note:
-
-Create a file named *.env* inside the server folder & place the OPENAI API key
 ```bash
-OPENAI_API_KEY=your-openai-api-key
+cd PrivateGPT\server
 ```
 
-#### 2. Create a Python virtual Environment
+#### 6. Paste server .env file in server folder
+
+
+#### 7. Create a Python virtual Environment
 
 Once you're in the server folder, enter the following command to create a virtual env:
 
 ```bash
 python3 -m venv venv
 ```
-use *Python* or *Python3* based on your system & installation.
+Use *Python* or *Python3* based on your system & installation.
 
-Now activate it with the following command:
+Activate virtual env with following command:
 ```bash
 source venv/bin/activate
 ```
 
 Everytime you're working with the flask server make sure you've activated the virtual env.
 
-#### 3. Install the required packages
+
+#### 8. Install the server packages
  
 ```bash
 pip install -r requirements.txt
 ```
-#### 4. Running the server
+
+#### 9. Run the server
 ```bash
 python3 index.py
 ```
+
+#### 10. Now site can be accessed at [http://localhost:3000](http://localhost:3000).
