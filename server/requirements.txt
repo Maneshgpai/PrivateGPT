@@ -5,3 +5,4 @@ pypdf
 flask_cors
 python-dotenv
 Werkzeug
+langchain
