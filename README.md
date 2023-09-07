@@ -13,7 +13,7 @@ Open any terminal & run the below code in to clone the repo in your system.
 
 
 ```bash
-git clone https://github.com/NormieNoob/llama-index-demo.git
+git clone https://github.com/Maneshgpai/PrivateGPT.git
 ```
 
 ## Running the React.js Client
