@@ -9,6 +9,7 @@ export default function Chat() {
   const [fileSummaries, setFileSummaries] = useState([]);
   const [textSummaries, setTextSummaries] = useState([]);
   const [activeTab, setActiveTab] = useState("text");
+  var response = ""
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -25,6 +26,7 @@ export default function Chat() {
   };
 
   const handleTextSnippetResult = (result) => {
+    // console.log("Inside Chat.jsx> userId:",userId);
     if (result) {
       setTextSummaries(result);
     }
@@ -127,7 +129,7 @@ export default function Chat() {
                   </div>
 
                   <div className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <span>{summary.summary}</span>
+                    <span>{(summary.summary/*.replace(/\\n/g, '\n')*/)}</span>
                   </div>
                 </div>
               </div>

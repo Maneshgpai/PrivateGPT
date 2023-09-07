@@ -4,7 +4,6 @@ from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename
 import functions.openai_funcs as openai_funcs
-import functions.gen_funcs as gen_funcs
 import openai
 from logging_config import logger
 from openai.error import AuthenticationError, APIError, RateLimitError, APIConnectionError, ServiceUnavailableError
@@ -152,6 +151,7 @@ def summarise_text():
 
             logger.info(openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens))
 
+            # summary1 = summary.replace('\n', '\\n')
             return jsonify([{"summary": summary}]), 200
     except Exception as e:
         error = "Error: {}".format(str(e))

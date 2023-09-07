@@ -29,8 +29,8 @@ function TextSnippet({ result }) {
         selectedPhysicianType = JSON.parse(localStorage.getItem("selectedPhysicianType")).name;
       }
       
-      console.log("selectedCodeset:",selectedCodeset)
-      console.log("selectedPhysicianType:",selectedPhysicianType)
+      // console.log("selectedCodeset:",selectedCodeset)
+      // console.log("selectedPhysicianType:",selectedPhysicianType)
 
       const queryParams = new URLSearchParams();
       queryParams.append("selectedCodeset", selectedCodeset);
@@ -50,8 +50,10 @@ function TextSnippet({ result }) {
 
       if (response.status === 200) {
         const data = await response.json();
+        var data1 = data
+        // console.log("In TextSnippet.jsx > data:",data1[0].summary);
+        // console.log("In TextSnippet.jsx > data2:",data1[0].summary.replace(/\\n/g, '\n'));
         setIsLoading(false);
-        console.log("In TextSnippet.jsx > data:",data);
         result(data);
       } else {
         const responseText = await response.text();
@@ -83,7 +85,7 @@ function TextSnippet({ result }) {
               name="text-snippet"
               type="input"
               placeholder="Paste relevant text from medical note"
-              rows="20"
+              rows="12"
               className="rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               onChange={(e) => handleOnChange(e)}
             />
