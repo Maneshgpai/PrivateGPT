@@ -3,3 +3,5 @@ tiktoken
 Flask
 pypdf
 flask_cors
+python-dotenv
+Werkzeug
