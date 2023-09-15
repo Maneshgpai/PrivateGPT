@@ -1,5 +1,5 @@
 openai
-tiktoken
+tiktoken==0.5.1
 Flask
 pypdf
 flask_cors
