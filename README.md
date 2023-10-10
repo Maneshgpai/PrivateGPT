@@ -25,7 +25,7 @@ This is built with [Next.js](https://nextjs.org/) framework, which is based on [
 
 #### 1. Navigate to client folder
 ```bash
-cd PrivateGPT\client
+cd client
 ```
 #### 2. Install the dependencies
 ```bash
@@ -46,7 +46,7 @@ npm run dev
 Open a new terminal
 
 ```bash
-cd PrivateGPT\server
+cd server
 ```
 
 #### 6. Paste server .env file in server folder
