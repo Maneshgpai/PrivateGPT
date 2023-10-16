@@ -1,5 +1,5 @@
 import requests
-from flask import Flask, jsonify, request, make_response
+from flask import Flask, jsonify, request, make_response, Response, stream_with_context
 from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename
@@ -82,7 +82,7 @@ def summarise_text():
         
         text = data['text']
         logger.info(text)
-        mod_response = openai.Moderation.create(input=text,)
+        mod_response = openai.Moderation.create(input=text, )
         logger.info(mod_response)
         if (mod_response['results'][0]['flagged']):
             error = 'This text violates website\'s content policy! Please use content relevant to medical coding only.'
@@ -115,9 +115,22 @@ def summarise_text():
             logger.info(prompt_tokens)
 
             try:
-                response = openai_funcs.getResponse(False, llmmodel, message)
+                full_response = ""
+                def generate():
+                    for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
+                        if "content" in resp.choices[0].delta:
+                            text = resp.choices[0].delta.content
+                            print(text, end='', flush=True)  # Print the live data as it comes in
+                          
+                            yield f"{text}\n\n"
+                            # time.sleep(1)  # Simulating a delay
+
+                # response = openai_funcs.getResponse(False, llmmodel, message)
+                return Response(stream_with_context(generate()), content_type='text/event-stream')
+
+                response = full_response
                 logger.info(response)
-                # print("Response generating...")
+                print("Response generating...", response)
             except AuthenticationError:
                 error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
                 logger.error(error)
@@ -143,21 +156,24 @@ def summarise_text():
                 logger.error(error)
                 return jsonify({"message": error}), 400
 
-            summary = response['choices'][0]['message']['content']
-            logger.info(summary)
+            # summary = response['choices'][0]['message']['content']
+            # logger.info(summary)
             
-            completion_tokens = openai_funcs.num_tokens_from_response(summary)
-            logger.info(completion_tokens)
+            # completion_tokens = openai_funcs.num_tokens_from_response(summary)
+            # logger.info(completion_tokens)
 
-            logger.info(openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens))
+            # logger.info(openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens))
+
+            
 
             # summary1 = summary.replace('\n', '\\n')
-            return jsonify([{"summary": summary}]), 200
+            return jsonify([{"summary": "summary"}]), 200
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
+        print(traceback.format_exc())   
         return jsonify({"message": error}), 400
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
