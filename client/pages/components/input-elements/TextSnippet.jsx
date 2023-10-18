@@ -1,7 +1,7 @@
 import { useState } from "react";
 import React from "react";
 
-function TextSnippet({ result }) {
+function TextSnippet({ result, Olddata, streamResponse, setStreamResponse }) {
   const [text, setText] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,30 +36,72 @@ function TextSnippet({ result }) {
       queryParams.append("selectedCodeset", selectedCodeset);
       queryParams.append("selectedPhysicianType", selectedCodeset);
 
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL
-        }/api/summarise-text?${queryParams.toString()}`,
-        {
-          mode: "cors",
-          method: "POST",
-          body: JSON.stringify({ text: text }),
-          headers,
-        }
-      );
+      // const response = await fetch(
+      //   `${
+      //     process.env.NEXT_PUBLIC_API_URL
+      //   }/api/summarise-text?${queryParams.toString()}`,
+      //   {
+      //     mode: "cors",
+      //     method: "POST",
+      //     body: JSON.stringify({ text: text }),
+      //     headers,
+      //   }
+      // );
+
+      // if (response.status === 200) {
+      //   const data = await response.json();
+      //   var data1 = data
+      //   // console.log("In TextSnippet.jsx > data:",data1[0].summary);
+      //   // console.log("In TextSnippet.jsx > data2:",data1[0].summary.replace(/\\n/g, '\n'));
+      //   setIsLoading(false);
+      //   result(data);
+      // } else {
+      //   const responseText = await response.text();
+      //   const data = JSON.parse(responseText);
+      //   setIsLoading(false);
+      //   setError(data.message);
+      // }
+
+
+      const response = await fetch(`${
+            process.env.NEXT_PUBLIC_API_URL
+          }/api/summarise-text?${queryParams.toString()}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: text })
+            });
 
       if (response.status === 200) {
-        const data = await response.json();
-        var data1 = data
-        // console.log("In TextSnippet.jsx > data:",data1[0].summary);
-        // console.log("In TextSnippet.jsx > data2:",data1[0].summary.replace(/\\n/g, '\n'));
-        setIsLoading(false);
-        result(data);
-      } else {
-        const responseText = await response.text();
-        const data = JSON.parse(responseText);
-        setIsLoading(false);
-        setError(data.message);
+        const reader = response.body.getReader();
+        setStreamResponse("")
+        const processStream = async () =>{
+          while(true){
+            const {done, value} = await reader.read();
+
+            if(done){
+              console.log("Stream complete")
+              setIsLoading(false);
+              result([{
+                summary: streamResponse
+              
+              }])
+              break;
+            }
+            let chunk = new TextDecoder("utf-8").decode(value);
+            console.log("Stream value:",chunk)
+            result([{}])
+            setStreamResponse((prev) => prev + chunk)
+            // let chunk = 
+
+                
+          }
+        }
+        processStream().catch(error => {
+          console.log(error);
+        });
+
       }
     } catch (e) {
       setIsLoading(false);

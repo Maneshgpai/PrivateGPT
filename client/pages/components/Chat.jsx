@@ -9,8 +9,9 @@ export default function Chat() {
   const [fileSummaries, setFileSummaries] = useState([]);
   const [textSummaries, setTextSummaries] = useState([]);
   const [activeTab, setActiveTab] = useState("text");
+  const [streamResponse, setStreamResponse] = useState("");
   var response = ""
-
+  console.log("textSummaries", textSummaries)
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
@@ -90,7 +91,7 @@ export default function Chat() {
           {activeTab === "file" ? (
             <FileUpload result={handleFileUploadResult} />
           ) : (
-            <TextSnippet result={handleTextSnippetResult} />
+            <TextSnippet result={handleTextSnippetResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} />
           )}
           {activeTab === "file" &&
             fileSummaries.map((summary, index) => (
@@ -108,7 +109,7 @@ export default function Chat() {
                   </div>
 
                   <div className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <span>{summary.summary}</span>
+                    <span>{summary?.summary || streamResponse}</span>
                   </div>
                 </div>
               </div>
@@ -129,7 +130,7 @@ export default function Chat() {
                   </div>
 
                   <div className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <span>{(summary.summary/*.replace(/\\n/g, '\n')*/)}</span>
+                    <span>{summary?.summary || streamResponse}</span>
                   </div>
                 </div>
               </div>
