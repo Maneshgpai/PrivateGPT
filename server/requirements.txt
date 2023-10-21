@@ -7,3 +7,4 @@ python-dotenv
 Werkzeug
 langchain
 gunicorn
+sentry-sdk==1.32.0

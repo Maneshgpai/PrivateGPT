@@ -8,6 +8,23 @@ import openai
 from logging_config import logger
 from openai.error import AuthenticationError, APIError, RateLimitError, APIConnectionError, ServiceUnavailableError
 import traceback
+import sentry_sdk
+from sentry_sdk import capture_exception, capture_message
+
+
+
+sentry_sdk.init(
+    dsn="https://d55b2883796c7ef67d5cc0f67f62215b@o1088451.ingest.sentry.io/4506089546776576",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -70,6 +87,12 @@ def upload_files():
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
+        capture_exception(
+            e, data={"request": request, "summaries": summaries}
+        )
+        capture_message(
+            traceback.format_exc(),
+        )
         return jsonify({"message": error}), 400
 
 
@@ -133,27 +156,65 @@ def summarise_text():
                 print("Response generating...", response)
             except AuthenticationError:
                 error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
+
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 401
             except APIError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists.'
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
+
                 return jsonify({"message": error}), 401
             except RateLimitError:
                 error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 401
             except APIConnectionError:
                 error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 401
             except ServiceUnavailableError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 401
             except:
                 error = "Error: {}".format(traceback.format_exc())
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 400
 
             # summary = response['choices'][0]['message']['content']
