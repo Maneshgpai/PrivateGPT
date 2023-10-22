@@ -84,7 +84,7 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse }) {
               console.log("Stream complete")
               setIsLoading(false);
               result([{
-                summary: streamResponse
+                summary: streamResponse.replace(/\\n/g, '\n')
               
               }])
               break;

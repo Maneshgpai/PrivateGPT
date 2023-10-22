@@ -8,10 +8,46 @@ import openai
 from logging_config import logger
 from openai.error import AuthenticationError, APIError, RateLimitError, APIConnectionError, ServiceUnavailableError
 import traceback
+import sentry_sdk
+from sentry_sdk import capture_exception, capture_message
+import logging
+# from sentry_sdk.integrations.logging import LoggingIntegration
+# from sentry_sdk.integrations.flask import FlaskIntegration
+import datetime
+
+
+openai.api_key = os.environ['OPENAI_API_KEY']
+
+
+
+# sentry_sdk.init(
+#     dsn=os.environ['SENTRY_DSN'],
+#     # Set traces_sample_rate to 1.0 to capture 100%
+#     # of transactions for performance monitoring.
+#     traces_sample_rate=1.0,
+#     integrations=[FlaskIntegration()],
+
+#     # Set profiles_sample_rate to 1.0 to profile 100%
+#     # of sampled transactions.
+#     # We recommend adjusting this value in production.
+#     profiles_sample_rate=1.0,
+# )
+
+
+
 
 app = Flask(__name__)
 CORS(app)
 
+
+# @app.before_request
+# def log_request():
+#     capture_message(
+#         f"Request--> <Method: {request.method}> <URL: {request.url}> <Headers: {request.headers}> <Data: {request.data}> <Time: {datetime.datetime.now()}>",
+
+#         level=logging.INFO,
+#     )
+    
 
 @app.route("/api", methods=['GET'])
 def home():
@@ -70,6 +106,12 @@ def upload_files():
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
+        capture_exception(
+            e, data={"request": request, "summaries": summaries}
+        )
+        capture_message(
+            traceback.format_exc(),
+        )
         return jsonify({"message": error}), 400
 
 
@@ -120,9 +162,9 @@ def summarise_text():
                     for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
                         if "content" in resp.choices[0].delta:
                             text = resp.choices[0].delta.content
-                            print(text, end='', flush=True)  # Print the live data as it comes in
-                          
-                            yield f"{text}\n\n"
+                            # print(text, end='', flush=True)  # Print the live data as it comes in
+                            final_text =text.replace('\n', '\\n')
+                            yield f"{final_text}"
                             # time.sleep(1)  # Simulating a delay
 
                 # response = openai_funcs.getResponse(False, llmmodel, message)
@@ -130,30 +172,68 @@ def summarise_text():
 
                 response = full_response
                 logger.info(response)
-                print("Response generating...", response)
+                # print("Response generating...", response)
             except AuthenticationError:
                 error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
+
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 401
             except APIError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists.'
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
+
                 return jsonify({"message": error}), 401
             except RateLimitError:
                 error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 401
             except APIConnectionError:
                 error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 401
             except ServiceUnavailableError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 401
             except:
                 error = "Error: {}".format(traceback.format_exc())
                 logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
                 return jsonify({"message": error}), 400
 
             # summary = response['choices'][0]['message']['content']
@@ -171,9 +251,9 @@ def summarise_text():
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
-        print(traceback.format_exc())   
+        # print(traceback.format_exc())   
         return jsonify({"message": error}), 400
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(port=8000)
