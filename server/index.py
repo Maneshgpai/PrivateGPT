@@ -10,14 +10,20 @@ from openai.error import AuthenticationError, APIError, RateLimitError, APIConne
 import traceback
 import sentry_sdk
 from sentry_sdk import capture_exception, capture_message
+import logging
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.flask import FlaskIntegration
+import datetime
 
 
 
 sentry_sdk.init(
-    dsn="https://d55b2883796c7ef67d5cc0f67f62215b@o1088451.ingest.sentry.io/4506089546776576",
+    dsn=os.environ['SENTRY_DSN'],
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     traces_sample_rate=1.0,
+    integrations=[FlaskIntegration()],
+
     # Set profiles_sample_rate to 1.0 to profile 100%
     # of sampled transactions.
     # We recommend adjusting this value in production.
@@ -26,9 +32,19 @@ sentry_sdk.init(
 
 
 
+
 app = Flask(__name__)
 CORS(app)
 
+
+@app.before_request
+def log_request():
+    capture_message(
+        f"Request--> <Method: {request.method}> <URL: {request.url}> <Headers: {request.headers}> <Data: {request.data}> <Time: {datetime.datetime.now()}>",
+
+        level=logging.INFO,
+    )
+    
 
 @app.route("/api", methods=['GET'])
 def home():
