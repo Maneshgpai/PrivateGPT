@@ -11,7 +11,6 @@ export default function Chat() {
   const [activeTab, setActiveTab] = useState("text");
   const [streamResponse, setStreamResponse] = useState("");
   var response = ""
-  console.log("textSummaries", textSummaries)
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
@@ -27,7 +26,6 @@ export default function Chat() {
   };
 
   const handleTextSnippetResult = (result) => {
-    // console.log("Inside Chat.jsx> userId:",userId);
     if (result) {
       setTextSummaries(result);
     }
@@ -67,9 +65,9 @@ export default function Chat() {
                 data-orientation="horizontal"
                 data-radix-collection-item=""
               >
-                Paste Text
+                Paste your note!
               </button>
-              <button
+              {/* <button
                 type="button"
                 role="tab"
                 aria-selected={activeTab === "file"}
@@ -84,7 +82,7 @@ export default function Chat() {
                 data-radix-collection-item=""
               >
                 Upload File
-              </button>
+              </button> */}
             </div>
           </div>
 

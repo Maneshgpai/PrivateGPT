@@ -133,20 +133,20 @@ def summarise_text():
         else:
             llmmodel = os.environ['DEFAULT_LLM_MODEL']
             openai.api_key = os.environ['OPENAI_API_KEY']
-            physicianType = request.args.get('selectedPhysicianType')
-            selectedCodeset = request.args.get('selectedCodeset')
+            # physicianType = request.args.get('selectedPhysicianType')
+            # selectedCodeset = request.args.get('selectedCodeset')
             
             logger.info(llmmodel)
-            logger.info(physicianType)
-            logger.info(selectedCodeset)
+            # logger.info(physicianType)
+            # logger.info(selectedCodeset)
 
-            if selectedCodeset == 'All':
-                s_codesets = os.environ['ALL_CODESETS']
-            else:
-                s_codesets = selectedCodeset
-            logger.info(s_codesets)
+            # if selectedCodeset == 'All':
+            #     s_codesets = os.environ['ALL_CODESETS']
+            # else:
+            #     s_codesets = selectedCodeset
+            # logger.info(s_codesets)
 
-            prompt = openai_funcs.setCodeGenPrompt(text.strip(), physicianType, 'No', s_codesets)
+            prompt = openai_funcs.setCodeGenPrompt(text.strip())
             logger.info(prompt)
 
             # 'summarise' for Summarising a medical note during a file upload.
@@ -256,4 +256,5 @@ def summarise_text():
 
 
 if __name__ == "__main__":
-    app.run(port=8000)
+    # app.run(host='0.0.0.0', port=5000) ### For Render
+    app.run(port=8080) ### For Local host

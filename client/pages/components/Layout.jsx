@@ -1,8 +1,8 @@
 import { Disclosure} from "@headlessui/react";
 import Header from "./Header";
 // import KeyChanger from "./input-elements/KeyChanger";
-import CodeSelector from "./input-elements/CodeSelector";
-import PhysicianTypeSelector from "./input-elements/PhysicianTypeSelector";
+// import CodeSelector from "./input-elements/CodeSelector";
+// import PhysicianTypeSelector from "./input-elements/PhysicianTypeSelector";
 
 export default function Layout(props) {
   return (
@@ -34,7 +34,7 @@ export default function Layout(props) {
         <Disclosure>
           <div
             id="sidebar"
-            className="bg-gray-900 pl-4 pr-4  w-1/3 border-r hidden md:block  pt-5 border-gray-100 dark:border-gray-600 shadow-none sticky top-0"
+            className="bg-gray-900 pl-4 pr-4  w-1/5 border-r hidden md:block  pt-5 border-gray-100 dark:border-gray-600 shadow-none sticky top-0"
           >
             <div
               className="w-full h-full hidden md:flex"
@@ -65,9 +65,9 @@ export default function Layout(props) {
 function getSidebarComponents() {
   return (
     <>
-      <CodeSelector />
+      {/* <CodeSelector /> */}
       <div><span>  </span></div>
-      <PhysicianTypeSelector/>
+      {/* <PhysicianTypeSelector/> */}
     </>
   );
 }

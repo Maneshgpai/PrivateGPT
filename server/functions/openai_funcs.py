@@ -78,26 +78,15 @@ def setChatMsg(msg_typ,s_codesets,prompt):
     )
     return jsonify({"message": error}), 400
 
-def setCodeGenPrompt(note, doc_type, incl_hist, codeset):
+def setCodeGenPrompt(note):
   try:
-    if incl_hist == 'Yes':
-      history_prompt1 = ' Consider Patient history for the codes. Seperate these under a different section named as History Code in response.'
-      history_prompt2 = ' Separate codes based on history of patient into a different section and name it as History.'
-    else:
-      history_prompt1 = ' Do not consider any history for the generating the codes.'
-      history_prompt2 = ''
-  
-    prompt = f"""{os.environ['OPENAI_CODEGEN_PROMPT1']}Consider codes only related to {codeset}.{history_prompt1}\
-  {os.environ['OPENAI_CODEGEN_PROMPT2']}{history_prompt2}\
-  {os.environ['OPENAI_CODEGEN_PROMPT3']}
-  ```{note}```"""
-
+    prompt = f"""{os.environ['OPENAI_CODEGEN_PROMPT1']}{note}{os.environ['OPENAI_CODEGEN_PROMPT2']}"""
     return prompt
   except Exception as e:
     error = "Error: {}".format(str(e))
     logger.error(error)
     capture_exception(
-        e, data={"note": note, "doc_type": doc_type, "incl_hist": incl_hist, "codeset": codeset}
+        e, data={"note": note}
     )
     capture_message(
         traceback.format_exc(),

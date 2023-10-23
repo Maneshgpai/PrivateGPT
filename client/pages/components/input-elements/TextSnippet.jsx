@@ -21,20 +21,20 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse }) {
       headers.append("Content-Type", "application/json");
 
       
-      if (localStorage.getItem("selectedCodeset") !== null && localStorage.getItem("selectedCodeset") !== undefined) {
-        selectedCodeset = JSON.parse(localStorage.getItem("selectedCodeset")).name;
-      }
+      // if (localStorage.getItem("selectedCodeset") !== null && localStorage.getItem("selectedCodeset") !== undefined) {
+      //   selectedCodeset = JSON.parse(localStorage.getItem("selectedCodeset")).name;
+      // }
       
-      if (localStorage.getItem("selectedPhysicianType") !== null && localStorage.getItem("selectedPhysicianType") !== undefined) {
-        selectedPhysicianType = JSON.parse(localStorage.getItem("selectedPhysicianType")).name;
-      }
+      // if (localStorage.getItem("selectedPhysicianType") !== null && localStorage.getItem("selectedPhysicianType") !== undefined) {
+      //   selectedPhysicianType = JSON.parse(localStorage.getItem("selectedPhysicianType")).name;
+      // }
       
       // console.log("selectedCodeset:",selectedCodeset)
       // console.log("selectedPhysicianType:",selectedPhysicianType)
 
       const queryParams = new URLSearchParams();
-      queryParams.append("selectedCodeset", selectedCodeset);
-      queryParams.append("selectedPhysicianType", selectedCodeset);
+      // queryParams.append("selectedCodeset", selectedCodeset);
+      // queryParams.append("selectedPhysicianType", selectedCodeset);
 
       // const response = await fetch(
       //   `${
