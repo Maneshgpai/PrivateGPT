@@ -151,7 +151,7 @@ def summarise_text():
 
             # 'summarise' for Summarising a medical note during a file upload.
             # 'code_response' for Generating medical codes directly from the text pasted
-            message = openai_funcs.setChatMsg('code_response', s_codesets, prompt)
+            message = openai_funcs.setChatMsg('code_response', prompt)
             logger.info(message)
             prompt_tokens = openai_funcs.num_tokens_from_messages(message)
             logger.info(prompt_tokens)
@@ -257,4 +257,5 @@ def summarise_text():
 
 if __name__ == "__main__":
     # app.run(host='0.0.0.0', port=5000) ### For Render
-    app.run(port=8080) ### For Local host
+    app.run(debug=True, port=8080) ### For Local host
+    # app.run(port=8080) ### For Local host

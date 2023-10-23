@@ -59,19 +59,19 @@ def getResponse(isStreaming,llm_name,messages):
     )
     return jsonify({"message": error}), 400
 
-def setChatMsg(msg_typ,s_codesets,prompt):
+def setChatMsg(msg_typ,prompt):
   try:
     if msg_typ == 'summarise':
       messages = [{"role": "system", "content": os.environ['OPENAI_MESSAGE_SUMMARISE']},{"role": "user", "content": prompt}]
     else:
-      messages = [{"role": "system", "content": os.environ['OPENAI_MESSAGE_CODEGEN']+s_codesets},{"role": "user", "content": prompt}]
+      messages = [{"role": "system", "content": os.environ['OPENAI_MESSAGE_CODEGEN']},{"role": "user", "content": prompt}]
     return messages
 
   except Exception as e:
     error = "Error: {}".format(str(e))
     logger.error(error)
     capture_exception(
-        e, data={"msg_typ": msg_typ, "s_codesets": s_codesets, "prompt": prompt}
+        e, data={"msg_typ": msg_typ, "prompt": prompt}
     )
     capture_message(
         traceback.format_exc(),
