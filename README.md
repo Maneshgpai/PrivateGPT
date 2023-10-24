@@ -27,6 +27,7 @@ This is built with [Next.js](https://nextjs.org/) framework, which is based on [
 ```bash
 cd client
 ```
+
 #### 2. Install the dependencies
 ```bash
 npm install
