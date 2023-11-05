@@ -256,6 +256,6 @@ def summarise_text():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8000) ### For Render
+    app.run(host='0.0.0.0', port=5000) ### For Render
     # app.run(debug=True, port=8080) ### For Local host
     # app.run(port=8080) ### For Local host
