@@ -1,7 +1,7 @@
 import { useState } from "react";
-// import OpenAIKeyForm from "./input-elements/OpenAIKeyForm";
 import FileUpload from "./input-elements/FileUpload";
 import TextSnippet from "./input-elements/TextSnippet";
+import * as XLSX from 'xlsx';
 
 export default function Chat() {
   const [showChatBox, setShowChatBox] = useState(false);
@@ -10,14 +10,10 @@ export default function Chat() {
   const [textSummaries, setTextSummaries] = useState([]);
   const [activeTab, setActiveTab] = useState("text");
   const [streamResponse, setStreamResponse] = useState("");
-  var response = ""
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-
-  // const handleOpenAIKeyResult = (result) => {
-  //   setShowChatBox(result);
-  // };
 
   const handleFileUploadResult = (result) => {
     if (result) {
@@ -29,6 +25,24 @@ export default function Chat() {
     if (result) {
       setTextSummaries(result);
     }
+  };
+
+
+  const exportStreamToExcel = (streamData) => {
+    const jsonData = JSON.parse(streamData.replace(/\\n/g, "").replace(/\\/g, ""));
+    const ws = XLSX.utils.json_to_sheet(jsonData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, 'streamData.xlsx');
+  };
+  
+
+
+
+  const clearAllContent = () => {
+    setFileSummaries([]);
+    setTextSummaries([]);
+    setStreamResponse("");
   };
 
   return (
@@ -89,7 +103,7 @@ export default function Chat() {
           {activeTab === "file" ? (
             <FileUpload result={handleFileUploadResult} />
           ) : (
-            <TextSnippet result={handleTextSnippetResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} />
+            <TextSnippet result={handleTextSnippetResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent} />
           )}
           {activeTab === "file" &&
             fileSummaries.map((summary, index) => (
@@ -131,8 +145,16 @@ export default function Chat() {
                     <span>{summary?.summary || streamResponse}</span>
                   </div>
                 </div>
+            <button
+        type="button"
+        onClick={() => exportStreamToExcel(summary?.summary || streamResponse)}
+        className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
+      >
+        Download Excel
+      </button>
               </div>
             ))}
+
         </>
     </div>
   );
