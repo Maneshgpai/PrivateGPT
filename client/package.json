@@ -22,7 +22,6 @@
     "react-dom": "18.2.0",
     "react-dropzone": "^14.2.3",
     "react-transition-group": "^4.4.5",
-    "tailwindcss": "^3.3.3",
-    "xlsx": "^0.18.5"
+    "tailwindcss": "^3.3.3"
   }
 }
