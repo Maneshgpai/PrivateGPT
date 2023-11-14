@@ -1,4 +1,4 @@
-openai
+openai==0.28
 tiktoken==0.5.1
 Flask
 pypdf
