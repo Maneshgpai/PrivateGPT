@@ -128,6 +128,7 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
               type="input"
               placeholder="Paste relevant text from medical note"
               rows="12"
+              value={text}
               className="rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               onChange={(e) => handleOnChange(e)}
             />
@@ -141,7 +142,11 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
               </button>
               <button
         type="button"
-        onClick={clearAllContent}
+        onClick={()=>{
+          clearAllContent()
+          setText("")
+          setStreamResponse("")
+        }}
         className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
         >
         Clear All
