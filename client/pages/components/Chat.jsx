@@ -3,12 +3,12 @@ import FileUpload from "./input-elements/FileUpload";
 import TextSnippet from "./input-elements/TextSnippet";
 import * as XLSX from 'xlsx';
 
-export default function Chat() {
+export default function Chat({pdfView=false}) {
   const [showChatBox, setShowChatBox] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fileSummaries, setFileSummaries] = useState([]);
   const [textSummaries, setTextSummaries] = useState([]);
-  const [activeTab, setActiveTab] = useState("text");
+  const [activeTab, setActiveTab] = useState(pdfView ? "file" : "text");
   const [streamResponse, setStreamResponse] = useState("");
 
   const handleTabChange = (tab) => {
@@ -79,7 +79,9 @@ export default function Chat() {
                 data-orientation="horizontal"
                 data-radix-collection-item=""
               >
-                Paste your note!
+                {
+                pdfView ? "Upload PDF" : "Paste your note!"
+                }
               </button>
               {/* <button
                 type="button"

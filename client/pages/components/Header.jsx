@@ -7,17 +7,32 @@ import {
   SignInButton,
   UserButton,
 } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 
-export default function AppHeader() {
+export default function AppHeader({toggleSidebar}) {
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
   return (
     <div
       id="nav"
       className="mx-auto px-4 border-b border-gray-100 dark:border-gray-600"
     >
       <div className="relative flex h-12 items-center justify-between">
-        <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-          <Disclosure>
-            <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white">
+        {
+          screenWidth < 768? (
+        <div className=" inset-y-0 left-0 flex items-center">
+          <Disclosure as='nav'>
+            <Disclosure.Button onClick={toggleSidebar}  className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white">
               <svg
                 width="24"
                 height="24"
@@ -29,8 +44,9 @@ export default function AppHeader() {
             </Disclosure.Button>
           </Disclosure>
         </div>
+          ):(
 
-        <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+        <div className="flex flex-1 items-center justify-start sm:items-stretch">
           <div className="flex flex-shrink-0 items-center">
             <span className="">
               <Link
@@ -42,6 +58,8 @@ export default function AppHeader() {
             </span>
           </div>
         </div>
+          )
+        }
         <div className="lg:flex lg:flex-1 lg:justify-end">
           <SignedIn>
             <UserButton afterSignOutUrl="/" />
