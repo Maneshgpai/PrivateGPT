@@ -1,8 +1,7 @@
 import React from 'react';
 
 const TableComponent = ({ completeStream }) => {
-  // Assuming completeStream is parsed JSON
-
+  // Safely parse the JSON
   const safeParseJson = (jsonString) => {
     try {
       return JSON.parse(jsonString);
@@ -24,26 +23,12 @@ const TableComponent = ({ completeStream }) => {
       <table className="w-full">
         {data.map((item, index) => (
           <tbody key={index}>
-            <tr>
-              <td>Name:</td>
-              <td>{item.Name}</td>
-            </tr>
-            <tr>
-              <td>Excerpt:</td>
-              <td>{item.Excerpt}</td>
-            </tr>
-            <tr>
-              <td>Code:</td>
-              <td>{item.Code}</td>
-            </tr>
-            <tr>
-              <td>Description:</td>
-              <td>{item.Description}</td>
-            </tr>
-            <tr>
-              <td>Citation:</td>
-              <td><a href={item.Citation} target="_blank" rel="noopener noreferrer">{item.Citation}</a></td>
-            </tr>
+            {Object.entries(item).map(([key, value]) => (
+              <tr key={key}>
+                <td>{key.charAt(0).toUpperCase() + key.slice(1)}:</td>
+                <td>{value}</td>
+              </tr>
+            ))}
           </tbody>
         ))}
       </table>
