@@ -1,7 +1,7 @@
 import { useState } from "react";
 import React from "react";
 
-function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clearAllContent }) {
+function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clearAllContent,completeText, setCompleteText,setCompleteStream }) {
   const [text, setText] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -15,6 +15,7 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
       return null;
     }
     setIsLoading(true);
+    setCompleteText(false)
 
     try {
       const headers = new Headers();
@@ -87,6 +88,7 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
                 summary: streamResponse.replace(/\\n/g, '\n')
               
               }])
+              setCompleteText(true)
               break;
             }
             let chunk = new TextDecoder("utf-8").decode(value);
@@ -146,6 +148,9 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
           clearAllContent()
           setText("")
           setStreamResponse("")
+          setCompleteText(false)
+          setCompleteStream("")
+
         }}
         className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
         >
