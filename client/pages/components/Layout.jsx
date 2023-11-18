@@ -1,7 +1,7 @@
 import { Disclosure} from "@headlessui/react";
 import Header from "./Header";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // import KeyChanger from "./input-elements/KeyChanger";
 // import CodeSelector from "./input-elements/CodeSelector";
 // import PhysicianTypeSelector from "./input-elements/PhysicianTypeSelector";
@@ -63,7 +63,7 @@ export default function Layout(props) {
                 position:  "absolute",
                 top:  "0px",
                 left:  "0px",
-                width: "100%",
+                width: "110%",
                 backgroundColor: "#1f2937",
                 height: "100vh",
                 zIndex: "1000",
@@ -87,7 +87,7 @@ export default function Layout(props) {
           {props.children}
            {isSidebarOpen && (
               <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-30" style={{
-                marginLeft: "20%",
+                marginLeft: "22%",
               }}></div>
             )}
         </div>
@@ -97,6 +97,18 @@ export default function Layout(props) {
 }
 
 function getSidebarComponents() {
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
   return (
     <>
       {/* <CodeSelector /> */}
@@ -108,7 +120,10 @@ function getSidebarComponents() {
           className="flex items-center justify-start text-sm font-medium text-gray-400 hover:bg-gray-700 p-3 rounded-md"
         >
           
-          <span className="ml-2"> Home (Paste your note)</span>
+          <span className="ml-2" style={{
+            whiteSpace: "nowrap",
+          
+          }}> Home {screenWidth > 1020 && "(Paste your note)"}</span>
         </Link>
         <Link
           href="upload-pdf"
@@ -116,7 +131,10 @@ function getSidebarComponents() {
           className="flex items-center justify-start text-sm font-medium text-gray-400 hover:bg-gray-700 p-3 rounded-md"
         >
           
-          <span className="ml-2">Upload medical note</span>
+          <span className="ml-2" style={{
+            whiteSpace: "nowrap",
+          
+          }}>Upload {screenWidth > 1020 &&  "medical note"}</span>
         </Link>
         <Link
           href="/settings"
@@ -124,7 +142,10 @@ function getSidebarComponents() {
           className="flex items-center justify-start text-sm font-medium text-gray-400 hover:bg-gray-700 p-3 rounded-md"
         >
           
-          <span className="ml-2">Settings</span>
+          <span className="ml-2" style={{
+            whiteSpace: "nowrap",
+          
+          }}>Settings</span>
         </Link>
 
         
