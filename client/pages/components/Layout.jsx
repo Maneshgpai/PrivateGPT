@@ -37,7 +37,7 @@ export default function Layout(props) {
               </Disclosure.Button>
 
               <div className="flex-grow px-4 py-2">
-                <div className="space-y-1">{getSidebarComponents()}</div>
+                <div className="space-y-1">{GetSidebarComponents()}</div>
               </div>
               </Disclosure.Panel>
             {/* {isSidebarOpen && (
@@ -74,7 +74,7 @@ export default function Layout(props) {
                 <div className="w-full h-full flex flex-col justify-between">
                   <div className="flex flex-col">
                     <Disclosure.Button>
-                      {getSidebarComponents()}
+                      {GetSidebarComponents()}
                     </Disclosure.Button>
                   </div>
                 </div>
@@ -96,7 +96,7 @@ export default function Layout(props) {
   );
 }
 
-function getSidebarComponents() {
+function GetSidebarComponents() {
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   useEffect(() => {
     const handleResize = () => {
