@@ -2,7 +2,7 @@ import { useState } from "react";
 import React from "react";
 import Loading from "../Loader";
 
-function FileUpload({ result }) {
+function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearAllContent,completeText, setCompleteText,setCompleteStream }) {
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
@@ -21,16 +21,12 @@ function FileUpload({ result }) {
 
     try {
       const headers = new Headers();
-      headers.append("x-open-ai-key", localStorage.getItem("openAIKey"));
 
-      const selectedModel = JSON.parse(localStorage.getItem("selectedModel"));
-      const queryParams = new URLSearchParams();
-      queryParams.append("model", selectedModel.name);
-
+      
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL
-        }/api/upload-file?${queryParams.toString()}`,
+        }/api/upload-file`,
         {
           mode: "cors",
           method: "POST",
@@ -40,16 +36,43 @@ function FileUpload({ result }) {
       );
 
       if (response.status === 200) {
-        const data = await response.json();
-        setIsLoading(false);
-        result(data);
+        const reader = response.body.getReader();
+        setStreamResponse("")
+        const processStream = async () =>{
+          while(true){
+            const {done, value} = await reader.read();
+
+            if(done){
+              console.log("Stream complete")
+              setIsLoading(false);
+              result([{
+                summary: streamResponse.replace(/\\n/g, '\n')
+              
+              }])
+              setCompleteText(true)
+              break;
+            }
+            let chunk = new TextDecoder("utf-8").decode(value);
+            console.log("Stream value:",chunk)
+            result([{}])
+            setStreamResponse((prev) => prev + chunk)
+            // let chunk = 
+
+                
+          }
+        }
+        processStream().catch(error => {
+          console.log(error);
+        });
+
       } else {
         setIsLoading(false);
         const data = JSON.parse(responseText);
         setError(data.message);
       }
-    } catch {
+    } catch (error) {
       setIsLoading(false);
+      console.log(error)
       setError("Something went wrong");
     }
   };
