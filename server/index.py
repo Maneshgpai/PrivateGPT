@@ -11,6 +11,8 @@ import traceback
 import sentry_sdk
 from sentry_sdk import capture_exception, capture_message
 import logging
+import PyPDF2
+
 # from sentry_sdk.integrations.logging import LoggingIntegration
 # from sentry_sdk.integrations.flask import FlaskIntegration
 import datetime
@@ -85,7 +87,6 @@ def home():
 
 @app.route("/api/upload-file", methods=["POST"])
 def upload_files():
-    os.environ['OPENAI_API_KEY'] = request.headers.get('x-open-ai-key')
     if not request.files.getlist("files"):
         logger.error("No file detected")
         return jsonify({"message": "Please send one or more Files"}), 400
@@ -93,26 +94,168 @@ def upload_files():
     files = request.files.getlist("files")
 
     summaries = []
+
     try:
         for file in files:
             if file:
                 filename = secure_filename(file.filename)
+                print(filename)
                 filepath = os.path.join(
                     'documents', os.path.basename(filename))
+                
+                reader = PyPDF2.PdfReader(file)
+                    # Iterate over each page and extract text
+                for page_num in range(len(reader.pages)):
+                    page = reader.pages[page_num]
+                    text = page.extract_text()
+                    print(text)
+                    logger.info(text)
+        mod_response = openai.Moderation.create(input=text, )
+        logger.info(mod_response)
+        if (mod_response['results'][0]['flagged']):
+            error = 'This text violates website\'s content policy! Please use content relevant to medical coding only.'
+            logger.error(error)
+            return jsonify({"message": error}), 401
+        else:
+            llmmodel = os.environ['DEFAULT_LLM_MODEL']
+            openai.api_key = os.environ['OPENAI_API_KEY']
+            # physicianType = request.args.get('selectedPhysicianType')
+            # selectedCodeset = request.args.get('selectedCodeset')
+            
+            logger.info(llmmodel)
+            # logger.info(physicianType)
+            # logger.info(selectedCodeset)
 
-                options = openai_funcs.get_options(request)
-                summary = openai_funcs.summarize_pdf(filepath, options)
-                summaries.append({"filename": filename, "summary": summary})
+            # if selectedCodeset == 'All':
+            #     s_codesets = os.environ['ALL_CODESETS']
+            # else:
+            #     s_codesets = selectedCodeset
+            # logger.info(s_codesets)
+
+            prompt = openai_funcs.setCodeGenPrompt(text.strip())
+            logger.info(prompt)
+
+            # 'summarise' for Summarising a medical note during a file upload.
+            # 'code_response' for Generating medical codes directly from the text pasted
+            message = openai_funcs.setChatMsg('code_response', prompt)
+            logger.info(message)
+            prompt_tokens = openai_funcs.num_tokens_from_messages(message)
+            logger.info(prompt_tokens)
+
+            try:
+                full_response = ""
+                def generate():
+                    for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
+                        if "content" in resp.choices[0].delta:
+                            text = resp.choices[0].delta.content
+                            # print(text, end='', flush=True)  # Print the live data as it comes in
+                            final_text =text.replace('\n', '\\n')
+                            print(final_text)
+                            yield f"{final_text}"
+                            # time.sleep(1)  # Simulating a delay
+
+                # response = openai_funcs.getResponse(False, llmmodel, message)
+
+                return Response(stream_with_context(generate()), content_type='text/event-stream')
+
+            except AuthenticationError:
+                error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
+
+                logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
+                return jsonify({"message": error}), 401
+            except APIError:
+                error = 'Retry your request after a brief wait and contact us if the issue persists.'
+                logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
+
+                return jsonify({"message": error}), 401
+            except RateLimitError:
+                error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
+                logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
+                return jsonify({"message": error}), 401
+            except APIConnectionError:
+                error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
+                logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
+                return jsonify({"message": error}), 401
+            except ServiceUnavailableError:
+                error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
+                logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
+                return jsonify({"message": error}), 401
+            except:
+                error = "Error: {}".format(traceback.format_exc())
+                logger.error(error)
+                capture_exception(
+                    error, data={"request": request}
+                )
+                capture_message(
+                    traceback.format_exc(),
+                )
+                return jsonify({"message": error}), 400
+
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
-        capture_exception(
-            e, data={"request": request, "summaries": summaries}
-        )
-        capture_message(
-            traceback.format_exc(),
-        )
+        # print(traceback.format_exc())   
         return jsonify({"message": error}), 400
+
+# def upload_files():
+#     if not request.files.getlist("files"):
+#         logger.error("No file detected")
+#         return jsonify({"message": "Please send one or more Files"}), 400
+
+#     files = request.files.getlist("files")
+
+#     summaries = []
+#     try:
+#         for file in files:
+#             if file:
+#                 filename = secure_filename(file.filename)
+#                 filepath = os.path.join(
+#                     'documents', os.path.basename(filename))
+
+#                 options = openai_funcs.get_options(request)
+#                 summary = openai_funcs.summarize_pdf(filepath, options)
+#                 summaries.append({"filename": filename, "summary": summary})
+#     except Exception as e:
+#         error = "Error: {}".format(str(e))
+#         logger.error(error)
+#         print(traceback.format_exc())
+#         capture_exception(
+#             e, data={"request": request, "summaries": summaries}
+#         )
+#         capture_message(
+#             traceback.format_exc(),
+#         )
+#         return jsonify({"message": error}), 400
 
 
 @app.route("/api/summarise-text", methods=["POST"])
@@ -256,6 +399,6 @@ def summarise_text():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000) ### For Render
+    app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
     # app.run(debug=True, port=8080) ### For Local host
     # app.run(port=8080) ### For Local host

@@ -113,7 +113,10 @@ export default function Chat({ pdfView = false }) {
         </div>
 
         {activeTab === "file" ? (
-          <FileUpload result={handleFileUploadResult} />
+          <FileUpload result={handleFileUploadResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
+          completeText={completeText}
+          setCompleteText={setCompleteText}
+          setCompleteStream={setCompleteStream} />
         ) : (
           <TextSnippet result={handleTextSnippetResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
             completeText={completeText}
@@ -138,8 +141,33 @@ export default function Chat({ pdfView = false }) {
                 </div>
 
                 <div className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <span>{summary?.summary || streamResponse}</span>
+                <button
+                    className="w-full rounded-md border border-gray-600 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
+                    onClick={toggleDropdown}
+                  >
+                    {
+                      isOpen ? "Hide" : "Show" 
+                    } raw data
+                    {
+                      isOpen ? 
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+</svg>
+:
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+
+                    }
+                  </button>
+                  {isOpen && (
+                    <div className="w-full  bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <span>{summary?.summary || streamResponse}</span>
+                  </div>
+                  )}
                 </div>
+                {completeStream && <TableComponent completeStream={completeStream} />}
+                
               </div>
             </div>
           ))}
@@ -156,19 +184,31 @@ export default function Chat({ pdfView = false }) {
                       {summary.filename ? summary.filename : ""}
                     </span>
                   </div>
+                  
                 </div>
 
-                <div className="w-full rounded-md border border-gray-700 bg-gray-500 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div className="w-full rounded-md border border-gray-800 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                   <button
-                    className="w-full rounded-md border border-gray-700 bg-gray-500 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-gray-600 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
                     onClick={toggleDropdown}
                   >
                     {
-                      isOpen ? "Hide" : "Show"
+                      isOpen ? "Hide" : "Show" 
                     } raw data
+                    {
+                      isOpen ? 
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+</svg>
+:
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+
+                    }
                   </button>
                   {isOpen && (
-                    <div className="w-full  bg-gray-500 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div className="w-full  bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <span>{summary?.summary || streamResponse}</span>
                   </div>
                   )}
