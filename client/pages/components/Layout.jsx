@@ -97,8 +97,9 @@ export default function Layout(props) {
 }
 
 function GetSidebarComponents() {
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [screenWidth, setScreenWidth] = useState(0);
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
     };

@@ -99,7 +99,6 @@ def upload_files():
         for file in files:
             if file:
                 filename = secure_filename(file.filename)
-                print(filename)
                 filepath = os.path.join(
                     'documents', os.path.basename(filename))
                 
@@ -108,7 +107,6 @@ def upload_files():
                 for page_num in range(len(reader.pages)):
                     page = reader.pages[page_num]
                     text = page.extract_text()
-                    print(text)
                     logger.info(text)
         mod_response = openai.Moderation.create(input=text, )
         logger.info(mod_response)
@@ -150,7 +148,6 @@ def upload_files():
                             text = resp.choices[0].delta.content
                             # print(text, end='', flush=True)  # Print the live data as it comes in
                             final_text =text.replace('\n', '\\n')
-                            print(final_text)
                             yield f"{final_text}"
                             # time.sleep(1)  # Simulating a delay
 

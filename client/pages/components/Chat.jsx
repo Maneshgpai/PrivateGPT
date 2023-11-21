@@ -140,7 +140,7 @@ export default function Chat({ pdfView = false }) {
                   </div>
                 </div>
 
-                <div className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div className="w-full mb-9 rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 <button
                     className="w-full rounded-md border border-gray-600 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
                     onClick={toggleDropdown}
@@ -169,6 +169,13 @@ export default function Chat({ pdfView = false }) {
                 {completeStream && <TableComponent completeStream={completeStream} />}
                 
               </div>
+              { completeStream && <button
+                type="button"
+                onClick={() => exportStreamToExcel(summary?.summary || streamResponse)}
+                className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-5 mb-5 m-5"
+              >
+                Download Excel
+              </button>}
             </div>
           ))}
         {activeTab === "text" &&
@@ -187,7 +194,7 @@ export default function Chat({ pdfView = false }) {
                   
                 </div>
 
-                <div className="w-full rounded-md border border-gray-800 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div className="w-full mb-9 rounded-md border border-gray-800 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                   <button
                     className="w-full rounded-md border border-gray-600 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
                     onClick={toggleDropdown}
