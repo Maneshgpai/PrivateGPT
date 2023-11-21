@@ -1,12 +1,14 @@
 import { useState } from "react";
 import React from "react";
-
+import { useUser } from "@clerk/nextjs";
+    
 function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clearAllContent,completeText, setCompleteText,setCompleteStream }) {
-  const [text, setText] = useState(null);
+  const [text, setText] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  var selectedCodeset = process.env.NEXT_PUBLIC_DEFAULT_CODESET
-  var selectedPhysicianType = process.env.NEXT_PUBLIC_DEFAULT_PHYSICIAN_TYPE
+  // var selectedCodeset = process.env.NEXT_PUBLIC_DEFAULT_CODESET
+  // var selectedPhysicianType = process.env.NEXT_PUBLIC_DEFAULT_PHYSICIAN_TYPE
+  const { user } = useUser();
 
   const handleSubmit = async (e) => {
     setError(false);
@@ -34,8 +36,7 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
       // console.log("selectedPhysicianType:",selectedPhysicianType)
 
       const queryParams = new URLSearchParams();
-      // queryParams.append("selectedCodeset", selectedCodeset);
-      // queryParams.append("selectedPhysicianType", selectedCodeset);
+      queryParams.append("uid", user.id);
 
       // const response = await fetch(
       //   `${
@@ -52,8 +53,8 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
       // if (response.status === 200) {
       //   const data = await response.json();
       //   var data1 = data
-      //   // console.log("In TextSnippet.jsx > data:",data1[0].summary);
-      //   // console.log("In TextSnippet.jsx > data2:",data1[0].summary.replace(/\\n/g, '\n'));
+      //   console.log("In TextSnippet.jsx > data:",data1[0].summary);
+      //   console.log("In TextSnippet.jsx > data2:",data1[0].summary.replace(/\\n/g, '\n'));
       //   setIsLoading(false);
       //   result(data);
       // } else {
@@ -82,7 +83,7 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
             const {done, value} = await reader.read();
 
             if(done){
-              console.log("Stream complete")
+              // console.log("Stream complete")
               setIsLoading(false);
               result([{
                 summary: streamResponse.replace(/\\n/g, '\n')
@@ -92,7 +93,7 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
               break;
             }
             let chunk = new TextDecoder("utf-8").decode(value);
-            console.log("Stream value:",chunk)
+            // console.log("Stream value:",chunk)
             result([{}])
             setStreamResponse((prev) => prev + chunk)
             // let chunk = 

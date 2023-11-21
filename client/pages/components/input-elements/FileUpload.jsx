@@ -1,11 +1,13 @@
 import { useState } from "react";
 import React from "react";
 import Loading from "../Loader";
+import { useUser } from "@clerk/nextjs";
 
 function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearAllContent,completeText, setCompleteText,setCompleteStream }) {
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
+  const { user } = useUser();
 
   const handleSubmit = async (e) => {
     setError(false);
@@ -21,12 +23,13 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
 
     try {
       const headers = new Headers();
-
+      const queryParams = new URLSearchParams();
+      queryParams.append("uid", user.id);
       
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL
-        }/api/upload-file`,
+        }/api/upload-file?${queryParams.toString()}`,
         {
           mode: "cors",
           method: "POST",
@@ -34,7 +37,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
           headers,
         }
       );
-
+      
       if (response.status === 200) {
         const reader = response.body.getReader();
         setStreamResponse("")
@@ -43,7 +46,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
             const {done, value} = await reader.read();
 
             if(done){
-              console.log("Stream complete")
+              // console.log("Stream complete")
               setIsLoading(false);
               result([{
                 summary: streamResponse.replace(/\\n/g, '\n')
@@ -53,7 +56,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
               break;
             }
             let chunk = new TextDecoder("utf-8").decode(value);
-            console.log("Stream value:",chunk)
+            // console.log("Stream value:",chunk)
             result([{}])
             setStreamResponse((prev) => prev + chunk)
             // let chunk = 
