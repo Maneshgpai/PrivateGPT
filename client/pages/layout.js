@@ -18,3 +18,5 @@ const Layout = ({ children, title = 'PrivateGPT' }) => {
     </>
   )
 }
+
+export default Layout
