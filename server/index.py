@@ -12,15 +12,15 @@ import sentry_sdk
 from sentry_sdk import capture_exception, capture_message
 import logging
 import PyPDF2
-
 # from sentry_sdk.integrations.logging import LoggingIntegration
 # from sentry_sdk.integrations.flask import FlaskIntegration
+import json
+import base64
+from google.cloud import firestore
+import pytz
 import datetime
 
-
 openai.api_key = os.environ['OPENAI_API_KEY']
-
-
 
 # sentry_sdk.init(
 #     dsn=os.environ['SENTRY_DSN'],
@@ -34,8 +34,6 @@ openai.api_key = os.environ['OPENAI_API_KEY']
 #     # We recommend adjusting this value in production.
 #     profiles_sample_rate=1.0,
 # )
-
-
 
 
 app = Flask(__name__)
@@ -103,16 +101,31 @@ def upload_files():
                     'documents', os.path.basename(filename))
                 
                 reader = PyPDF2.PdfReader(file)
-                    # Iterate over each page and extract text
+                # Iterate over each page and extract text
                 for page_num in range(len(reader.pages)):
                     page = reader.pages[page_num]
                     text = page.extract_text()
                     logger.info(text)
+        
+        uid = request.args.get('uid')
+
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+
+        db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+            .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                  ,"source":"upload_file","field1":"query","field2":filename,"field3":text})
+
+
         mod_response = openai.Moderation.create(input=text, )
         logger.info(mod_response)
         if (mod_response['results'][0]['flagged']):
             error = 'This text violates website\'s content policy! Please use content relevant to medical coding only.'
             logger.error(error)
+            db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                      ,"source":"upload_file","field1":"error","field2":error})
             return jsonify({"message": error}), 401
         else:
             llmmodel = os.environ['DEFAULT_LLM_MODEL']
@@ -120,28 +133,19 @@ def upload_files():
             # physicianType = request.args.get('selectedPhysicianType')
             # selectedCodeset = request.args.get('selectedCodeset')
             
-            logger.info(llmmodel)
-            # logger.info(physicianType)
-            # logger.info(selectedCodeset)
-
-            # if selectedCodeset == 'All':
-            #     s_codesets = os.environ['ALL_CODESETS']
-            # else:
-            #     s_codesets = selectedCodeset
-            # logger.info(s_codesets)
-
+            # logger.info(llmmodel)
             prompt = openai_funcs.setCodeGenPrompt(text.strip())
-            logger.info(prompt)
+            # logger.info(prompt)
 
             # 'summarise' for Summarising a medical note during a file upload.
             # 'code_response' for Generating medical codes directly from the text pasted
             message = openai_funcs.setChatMsg('code_response', prompt)
-            logger.info(message)
+            # logger.info(message)
             prompt_tokens = openai_funcs.num_tokens_from_messages(message)
-            logger.info(prompt_tokens)
+            # logger.info(prompt_tokens)
 
             try:
-                full_response = ""
+                # full_response = ""
                 def generate():
                     for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
                         if "content" in resp.choices[0].delta:
@@ -150,9 +154,7 @@ def upload_files():
                             final_text =text.replace('\n', '\\n')
                             yield f"{final_text}"
                             # time.sleep(1)  # Simulating a delay
-
                 # response = openai_funcs.getResponse(False, llmmodel, message)
-
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 
             except AuthenticationError:
@@ -258,6 +260,10 @@ def upload_files():
 @app.route("/api/summarise-text", methods=["POST"])
 def summarise_text():
     try:
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+
         data = request.get_json()
         if 'text' not in data:
             return jsonify({'error': 'Text not found in request'}), 400
@@ -275,26 +281,18 @@ def summarise_text():
             openai.api_key = os.environ['OPENAI_API_KEY']
             # physicianType = request.args.get('selectedPhysicianType')
             # selectedCodeset = request.args.get('selectedCodeset')
-            
-            logger.info(llmmodel)
-            # logger.info(physicianType)
-            # logger.info(selectedCodeset)
-
-            # if selectedCodeset == 'All':
-            #     s_codesets = os.environ['ALL_CODESETS']
-            # else:
-            #     s_codesets = selectedCodeset
-            # logger.info(s_codesets)
+            uid = request.args.get('uid')
+            db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                      ,"source":"paste_content","field1":"query","field2":text.strip()})
 
             prompt = openai_funcs.setCodeGenPrompt(text.strip())
-            logger.info(prompt)
 
             # 'summarise' for Summarising a medical note during a file upload.
             # 'code_response' for Generating medical codes directly from the text pasted
             message = openai_funcs.setChatMsg('code_response', prompt)
-            logger.info(message)
             prompt_tokens = openai_funcs.num_tokens_from_messages(message)
-            logger.info(prompt_tokens)
+            # logger.info(prompt_tokens)
 
             try:
                 full_response = ""
@@ -310,9 +308,6 @@ def summarise_text():
                 # response = openai_funcs.getResponse(False, llmmodel, message)
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 
-                response = full_response
-                logger.info(response)
-                # print("Response generating...", response)
             except AuthenticationError:
                 error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
 
@@ -396,6 +391,6 @@ def summarise_text():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
-    # app.run(debug=True, port=8080) ### For Local host
+    # app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
+    app.run(debug=True, port=8080) ### For Local host
     # app.run(port=8080) ### For Local host
