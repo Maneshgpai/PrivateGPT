@@ -116,13 +116,16 @@ export default function Chat({ pdfView = false }) {
           <FileUpload result={handleFileUploadResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
           completeText={completeText}
           setCompleteText={setCompleteText}
-          setCompleteStream={setCompleteStream} />
+          setCompleteStream={setCompleteStream}
+          completeStream={completeStream}
+          
+          />
         ) : (
           <TextSnippet result={handleTextSnippetResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
             completeText={completeText}
             setCompleteText={setCompleteText}
             setCompleteStream={setCompleteStream}
-
+            completeStream={completeStream}
           />
         )}
         {activeTab === "file" &&
@@ -161,7 +164,9 @@ export default function Chat({ pdfView = false }) {
                     }
                   </button>
                   {isOpen && (
-                    <div className="w-full  bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div className="w-full mt-10 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{
+                      borderTop: "1px solid #4B5563"
+                    }}>
                     <span>{summary?.summary || streamResponse}</span>
                   </div>
                   )}
@@ -215,7 +220,9 @@ export default function Chat({ pdfView = false }) {
                     }
                   </button>
                   {isOpen && (
-                    <div className="w-full  bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div className="w-full mt-10 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{
+                      borderTop: "1px solid #4B5563"
+                    }}>
                     <span>{summary?.summary || streamResponse}</span>
                   </div>
                   )}
