@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.css-12i7wg6-MuiPaper-root-MuiDrawer-paper{
+    background-color: #ebeef4 !important;
+    color: #000;
+}
+
+
