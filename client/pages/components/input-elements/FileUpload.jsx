@@ -101,7 +101,14 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
     <div className="flex w-full flex-col items-center">
       <div className=" w-4/5">
         <div className="mx-auto">
-          <div className="mt-2 flex justify-between align-center bg-gray-800 rounded-lg border border-dashed border-gray-900/25 px-6 py-6">
+          <div className="mt-2 flex justify-between align-center rounded-lg border border-dashed border-gray-900/25 px-6 py-6"
+          
+          style={{
+            backgroundColor: "#ebeef4",
+            color: "#000"
+          
+          
+          }}>
             <div className="flex flex-row">
               <div className="mr-2">
                 <svg
@@ -120,7 +127,12 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
                 </svg>
               </div>
               <div className="flex flex-col">
-                <p className="font-semibold text-gray-300">
+                <p className="font-semibold text-gray-300" style={{
+              backgroundColor: "#ebeef4",
+              color: "#000"
+            
+            
+            }}>
                   Upload PDF File(s)
                 </p>
                 <p className="text-xs leading-5 text-gray-600">
@@ -157,7 +169,12 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
             htmlFor="file-upload"
             className="relative cursor-pointer rounded-md font-semibold text-gray-300 hover:text-indigo-500"
           >
-            <span className="px-4 py-2 bg-gray-600 rounded-md bg-gray-700 hover:bg-gray-900 hover:text-white">
+            <span className="px-4 py-2 rounded-md  hover:text-white" style={{
+              backgroundColor: "#2E85FF",
+              color: "#000"
+            
+            
+            }}>
               Browse Files
             </span>
             <input
@@ -189,7 +206,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
-                  stroke="currentColor"
+                  stroke="#000"
                   className="w-6 h-6"
                 >
                   <path
@@ -198,7 +215,12 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
                     d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
                   />
                 </svg>
-                <span className="ml-1">{file.name}</span>
+                <span className="ml-1" style={{
+              backgroundColor: "#ebeef4",
+              color: "#000"
+            
+            
+            }}>{file.name}</span>
               </div>
               <div>
                 <button onClick={() => handleDeleteFile(index)}>
@@ -232,6 +254,13 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
                 : () => setError("Please upload a file")
             }
             className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
+
+            style={{
+              backgroundColor: "#2E85FF",
+              color: "#000"
+            
+            
+            }}
           >
             {isLoading ? "Uploading.." : "Upload"}
           </button>

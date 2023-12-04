@@ -20,8 +20,19 @@ const TableComponent = ({ completeStream }) => {
   const allKeys = [...new Set(data.flatMap(Object.keys))];
 
   return (
-    <div className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-      <table className="w-full border-collapse border border-gray-500">
+    <div className="w-full rounded-md border border-gray-700 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    style={{
+      backgroundColor: "#ebeef4",
+      color: "#000"
+    
+    
+    }}>
+      <table className="w-full border-collapse border border-gray-500" style={{
+                      backgroundColor: "#2E85FF",
+                      color: "#000"
+    
+    
+    }}>
         <thead>
           <tr>
             {allKeys.map(key => (

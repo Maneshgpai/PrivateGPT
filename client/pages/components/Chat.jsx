@@ -3,6 +3,7 @@ import FileUpload from "./input-elements/FileUpload";
 import TextSnippet from "./input-elements/TextSnippet";
 import * as XLSX from 'xlsx';
 import TableComponent from "./TableComponent";
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 export default function Chat({ pdfView = false }) {
   const [showChatBox, setShowChatBox] = useState(false);
@@ -58,10 +59,20 @@ export default function Chat({ pdfView = false }) {
 
   return (
     <div
-      className="container mx-auto bg-gray-900  flex flex-col"
-      style={{ minHeight: `calc(100vh - ${3}rem)` }}
+      className="container mx-auto  flex flex-col"
+      style={{ minHeight: `calc(100vh - ${3}rem)`,
+        backgroundColor: "#ebeef4",
+        color: "#000"
+      
+      
+      }}
     >
-      <div className="border-gray-100 dark:border-gray-600 shadow-none sticky top-0">
+      <div className="border-gray-100  shadow-none sticky top-0" style={{
+              backgroundColor: "#ebeef4",
+              color: "#000"
+            
+            
+            }}>
         <h1 className="text-center py-3 font-bold text-xl text-gray-300">
           {/* Chat with your PDF */}
         </h1>
@@ -72,7 +83,7 @@ export default function Chat({ pdfView = false }) {
           <div
             role="tablist"
             aria-orientation="horizontal"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-gray-800 p-1 text-gray-300"
+            className="inline-flex h-10 items-center justify-center rounded-md p-1 text-gray-300"
             tabIndex="0"
             data-orientation="horizontal"
           >
@@ -82,12 +93,13 @@ export default function Chat({ pdfView = false }) {
               aria-selected={activeTab === "text"}
               onClick={() => handleTabChange("text")}
               className={`${activeTab === "text"
-                  ? "bg-gray-900 text-foreground shadow-sm"
+                  ? " text-foreground shadow-sm"
                   : ""
                 } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
               tabIndex="0"
               data-orientation="horizontal"
               data-radix-collection-item=""
+              
             >
               {
                 pdfView ? "Upload PDF" : "Paste your note!"
@@ -143,10 +155,22 @@ export default function Chat({ pdfView = false }) {
                   </div>
                 </div>
 
-                <div className="w-full rounded-md border border-gray-700 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div className="w-full rounded-md border border-gray-700 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style={{
+                  backgroundColor: "#2E85FF",
+                  color: "#000"
+                
+                
+                }}>
                 <button
-                    className="w-full rounded-md border border-gray-600 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
+                    className="w-full rounded-md border border-gray-600 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
                     onClick={toggleDropdown}
+                    style={{
+                      backgroundColor: "#2E85FF",
+                      color: "#000"
+                    
+                    
+                    }}
                   >
                     {
                       isOpen ? "Hide" : "Show" 
@@ -164,8 +188,14 @@ export default function Chat({ pdfView = false }) {
                     }
                   </button>
                   {isOpen && (
-                    <div className="w-full mt-10 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{
-                      borderTop: "1px solid #4B5563"
+
+                    <div className="w-full  text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    style={{
+                      backgroundColor: "#2E85FF",
+                      color: "#000"
+                    
+                    
+
                     }}>
                     <span>{summary?.summary || streamResponse}</span>
                   </div>
@@ -192,10 +222,22 @@ export default function Chat({ pdfView = false }) {
                   
                 </div>
 
-                <div className="w-full rounded-md border border-gray-800 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div className="w-full rounded-md border border-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style={{
+                  backgroundColor: "#2E85FF",
+                  color: "#000"
+                
+                
+                }}>
                   <button
-                    className="w-full rounded-md border border-gray-600 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
+                    className="w-full rounded-md border border-gray-600 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
                     onClick={toggleDropdown}
+                    style={{
+                      backgroundColor: "#2E85FF",
+                      color: "#000"
+                    
+                    
+                    }}
                   >
                     {
                       isOpen ? "Hide" : "Show" 
@@ -213,8 +255,13 @@ export default function Chat({ pdfView = false }) {
                     }
                   </button>
                   {isOpen && (
-                    <div className="w-full mt-10 bg-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{
-                      borderTop: "1px solid #4B5563"
+                    <div className="w-full  text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    style={{
+                      backgroundColor: "#2E85FF",
+                      color: "#000"
+                    
+                    
+
                     }}>
                     <span>{summary?.summary || streamResponse}</span>
                   </div>
@@ -226,8 +273,15 @@ export default function Chat({ pdfView = false }) {
                 type="button"
                 onClick={() => exportStreamToExcel(summary?.summary || streamResponse)}
                 className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-5 mb-5 m-5"
+                style={{
+                  backgroundColor: "#2E85FF",
+  color: "#000"
+
+
+}}
               >
-                Download Excel
+                <FileDownloadIcon/>
+                Download codes
               </button>
             </div>
           ))}

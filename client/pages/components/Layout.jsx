@@ -1,157 +1,215 @@
-import { Disclosure} from "@headlessui/react";
-import Header from "./Header";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-// import KeyChanger from "./input-elements/KeyChanger";
-// import CodeSelector from "./input-elements/CodeSelector";
-// import PhysicianTypeSelector from "./input-elements/PhysicianTypeSelector";
+import * as React from 'react';
+import { styled, useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import MuiDrawer from '@mui/material/Drawer';
+import MuiAppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import List from '@mui/material/List';
+import CssBaseline from '@mui/material/CssBaseline';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import InboxIcon from '@mui/icons-material/MoveToInbox';
+import MailIcon from '@mui/icons-material/Mail';
+import { ChatBubble } from '@mui/icons-material';
+import { CloudUpload } from '@mui/icons-material';
+import { Settings } from '@mui/icons-material';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import Link from 'next/link';
+
+const drawerWidth = 240;
+
+const openedMixin = (theme) => ({
+  width: drawerWidth,
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.enteringScreen,
+  }),
+  overflowX: 'hidden',
+});
+
+const closedMixin = (theme) => ({
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  overflowX: 'hidden',
+  width: `calc(${theme.spacing(7)} + 1px)`,
+  [theme.breakpoints.up('sm')]: {
+    width: `calc(${theme.spacing(8)} + 1px)`,
+  },
+});
+
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
+}));
+
+const AppBar = styled(MuiAppBar, {
+  shouldForwardProp: (prop) => prop !== 'open',
+})(({ theme, open }) => ({
+  zIndex: theme.zIndex.drawer + 1,
+  transition: theme.transitions.create(['width', 'margin'], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...(open && {
+    marginLeft: drawerWidth,
+    width: `calc(100% - ${drawerWidth}px)`,
+    transition: theme.transitions.create(['width', 'margin'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  }),
+}));
+
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
+  ({ theme, open }) => ({
+    width: drawerWidth,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box',
+    ...(open && {
+      ...openedMixin(theme),
+      '& .MuiDrawer-paper': openedMixin(theme),
+    }),
+    ...(!open && {
+      ...closedMixin(theme),
+      '& .MuiDrawer-paper': closedMixin(theme),
+    }),
+  }),
+);
 
 export default function Layout(props) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const theme = useTheme();
+  const [open, setOpen] = React.useState(false);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+  const handleDrawerOpen = () => {
+    setOpen(true);
   };
 
-  const closeSidebar = () => {
-    if (isSidebarOpen) setIsSidebarOpen(false);
+  const handleDrawerClose = () => {
+    setOpen(false);
   };
 
+  const sideData= [
+    {
+      name: "Chat",
+      icon: <ChatBubble />,
+      link: "/",
+    },
+    {
+      name: "Upload PDF",
+      icon: <UploadFileIcon />,
+      link: "/upload-pdf",
+    },
+    {
+      name: "Settings",
+      icon: <Settings />,
+      link: "/settings",
+    },
+    
+
+  ]
+
   return (
-    <div className="flex flex-col h-screen" onClick={closeSidebar}>
-      <Disclosure as="nav" className="bg-gray-900">
-        {({ open }) => (
-          <>
-            <Header toggleSidebar={toggleSidebar} />
-
-            <Disclosure.Panel
-              className={`sm:hidden fixed inset-y-0 left-0 w-4/5 max-w-xs z-40 flex flex-col bg-gray-900 border-r dark:border-gray-600  transition-opacity duration-300 ease-in-out ${
-                isSidebarOpen ? "opacity-100" : "opacity-0"
-              }`}
-            >
-
-              <Disclosure.Button className="px-8 inline-flex items-center justify-start rounded-md p-3 text-gray-400 hover:bg-gray-700">
-                <svg width="24" height="24" viewBox="0 0 16 16" fill="#858699">
-                  <path d="M15 5.25A3.25 3.25 0 0 0 11.75 2h-7.5A3.25 3.25 0 0 0 1 5.25v5.5A3.25 3.25 0 0 0 4.25 14h7.5A3.25 3.25 0 0 0 15 10.75v-5.5Zm-3.5 7.25H7v-9h4.5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2Zm-6 0H4.25a1.75 1.75 0 0 1-1.75-1.75v-5.5c0-.966.784-1.75 1.75-1.75H5.5v9Z"></path>
-                </svg>
-              </Disclosure.Button>
-
-              <div className="flex-grow px-4 py-2">
-                <div className="space-y-1">{GetSidebarComponents()}</div>
-              </div>
-              </Disclosure.Panel>
-            {/* {isSidebarOpen && (
-              <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-30"></div>
-            )} */}
-          </>
-        )}
-      </Disclosure>
-
-      <div className="flex-grow flex flex-col md:flex-row overflow-hidden" >
-        <Disclosure
-          
-          
-        >
-          <div
-            id="sidebar"
-            className={`bg-gray-900 pl-4 pr-4  w-1/5 ${!isSidebarOpen && "hidden"} border-r md:block  pt-5 border-gray-100 dark:border-gray-600 shadow-none sticky top-0 `}
-           >
-            <div
-              className="w-full h-full  md:flex"
-              data-projection-id="21"
-              style={isSidebarOpen ? {
-                position:  "absolute",
-                top:  "0px",
-                left:  "0px",
-                width: "110%",
-                backgroundColor: "#1f2937",
-                height: "100vh",
-                zIndex: "1000",
-              } : {}}
-            >
-              <div className="w-full h-full flex flex-col ">
-                <div className="flex justify-between items-center "></div>
-                <div className="w-full h-full flex flex-col justify-between">
-                  <div className="flex flex-col">
-                    <Disclosure.Button>
-                      {GetSidebarComponents()}
-                    </Disclosure.Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Disclosure>
-
-        <div className="flex flex-grow flex-col md:flex-row w-full overflow-y-auto">
-          {props.children}
-           {isSidebarOpen && (
-              <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-30" style={{
-                marginLeft: "22%",
-              }}></div>
-            )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GetSidebarComponents() {
-  const [screenWidth, setScreenWidth] = useState(0);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-  return (
-    <>
-      {/* <CodeSelector /> */}
-      <div>
-        <Link
-          href="
-          /"
-          rel="noreferrer"
-          className="flex items-center justify-start text-sm font-medium text-gray-400 hover:bg-gray-700 p-3 rounded-md"
-        >
-          
-          <span className="ml-2" style={{
-            whiteSpace: "nowrap",
-          
-          }}> Home {screenWidth > 1020 && "(Paste your note)"}</span>
-        </Link>
-        <Link
-          href="upload-pdf"
-          rel="noreferrer"
-          className="flex items-center justify-start text-sm font-medium text-gray-400 hover:bg-gray-700 p-3 rounded-md"
-        >
-          
-          <span className="ml-2" style={{
-            whiteSpace: "nowrap",
-          
-          }}>Upload {screenWidth > 1020 &&  "medical note"}</span>
-        </Link>
-        <Link
-          href="/settings"
-          rel="noreferrer"
-          className="flex items-center justify-start text-sm font-medium text-gray-400 hover:bg-gray-700 p-3 rounded-md"
-        >
-          
-          <span className="ml-2" style={{
-            whiteSpace: "nowrap",
-          
-          }}>Settings</span>
-        </Link>
-
+    <Box sx={{ display: 'flex' }}  >
+      <CssBaseline />
+      <AppBar position="fixed" open={open} style={{
+          backgroundColor: "#ebeef4",
+          color: "#000"
         
-      </div>
-      {/* <PhysicianTypeSelector/> */}
-    </>
+        }}>
+        <Toolbar style={{
+          backgroundColor: "#ebeef4",
+          color: "#000"
+        
+        }}>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            sx={{
+              marginRight: 5,
+              ...(open && { display: 'none' }),
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+          
+        </Toolbar>
+      </AppBar>
+      <Drawer variant="permanent" open={open} style={{
+          backgroundColor: "#ebeef4",
+          color: "#000"
+        
+        
+        }} >
+        <DrawerHeader >
+          <IconButton onClick={handleDrawerClose}>
+            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </IconButton>
+        </DrawerHeader>
+        <Divider />
+        <List style={{
+          backgroundColor: "#ebeef4",
+          color: "#000"
+        
+        
+        }}>
+          {sideData.map((item, index) => (
+            <ListItem key={index} disablePadding sx={{ display: 'block' }} style={{
+              backgroundColor: "#ebeef4",
+              color: "#000"
+            
+            
+            }}
+            >
+              <Link href={item?.link}
+          rel="noreferrer">
+              <ListItemButton
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? 'initial' : 'center',
+                  px: 2.5,
+                }}
+                >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : 'auto',
+                    justifyContent: 'center',
+                  }}
+                  >
+                  {item?.icon}
+                </ListItemIcon>
+                <ListItemText primary={item?.name} sx={{ opacity: open ? 1 : 0 }} />
+              </ListItemButton>
+                  </Link>
+            </ListItem>
+          ))}
+        </List>
+        <Divider />
+     
+      </Drawer>
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <div className="flex flex-grow flex-col md:flex-row w-full overflow-y-auto" >
+          {props.children}
+          
+        </div>
+      </Box>
+    </Box>
   );
 }

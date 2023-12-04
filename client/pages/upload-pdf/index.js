@@ -8,7 +8,12 @@ export default function Home() {
   return (
     <>
       <SignedIn>
-        <div className="bg-gray-900">
+        <div style={{
+              backgroundColor: "#ebeef4",
+              color: "#000"
+            
+            
+            }}>
           <Layout>
             <Chat pdfView={true} />
           </Layout>

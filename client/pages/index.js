@@ -8,7 +8,13 @@ export default function Home() {
   return (
     <>
       <SignedIn>
-        <div className="bg-gray-900">
+        <div className=""
+        style={{
+          backgroundColor: "#ebeef4",
+          color: "#000"
+        
+        
+        }}>
           <Layout>
             <Chat />
           </Layout>
