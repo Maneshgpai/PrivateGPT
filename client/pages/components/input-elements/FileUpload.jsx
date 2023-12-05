@@ -2,6 +2,23 @@ import { useState } from "react";
 import React from "react";
 import Loading from "../Loader";
 import { useUser } from "@clerk/nextjs";
+import Button from '@mui/material/Button';
+import { styled } from '@mui/material/styles';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import LoadingButton from '@mui/lab/LoadingButton';
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
+
 
 function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearAllContent,completeText, setCompleteText,setCompleteStream, completeStream }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -109,7 +126,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
           
           
           }}>
-            <div className="flex flex-row">
+            {/* <div className="flex flex-row">
               <div className="mr-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -139,12 +156,13 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
                   PDF up to 10MB
                 </p>
               </div>
-            </div>
+            </div> */}
             <form
               onSubmit={handleSubmit}
-              className="flex flex-col justify-between align-middle"
+              className="flex flex-col justify-center align-middle items-center w-full"
             >
               {getFileUploadComponent()}
+              
             </form>
           </div>
           {files.length ? getFileComponent() : <></>}
@@ -163,31 +181,38 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
 
   function getFileUploadComponent() {
     return (
-      <div className="text-center">
-        <div className="flex text-sm leading-6 text-gray-600">
-          <label
-            htmlFor="file-upload"
-            className="relative cursor-pointer rounded-md font-semibold text-gray-300 hover:text-indigo-500"
-          >
-            <span className="px-4 py-2 rounded-md  hover:text-white" style={{
-              backgroundColor: "#2E85FF",
-              color: "#000"
+      // <div className="text-center">
+      //   <div className="flex text-sm leading-6 text-gray-600">
+      //     <label
+      //       htmlFor="file-upload"
+      //       className="relative cursor-pointer rounded-md font-semibold text-gray-300 hover:text-indigo-500"
+      //     >
+      //       <span className="px-4 py-2 rounded-md  hover:text-white" style={{
+      //         backgroundColor: "#2E85FF",
+      //         color: "#000"
             
             
-            }}>
-              Browse Files
-            </span>
-            <input
-              id="file-upload"
-              name="file-upload"
-              type="file"
-              className="sr-only"
-              onChange={(e) => handleOnChange(e)}
-              multiple
-            />
-          </label>
-        </div>
-      </div>
+      //       }}>
+      //         Browse Files
+      //       </span>
+      //       <input
+      //         id="file-upload"
+      //         name="file-upload"
+      //         type="file"
+      //         className="sr-only"
+      //         onChange={(e) => handleOnChange(e)}
+      //         multiple
+      //       />
+      //     </label>
+      //   </div>
+      // </div>
+      <Button component="label" variant="contained"  startIcon={<CloudUploadIcon />}
+      onChange={(e) => handleOnChange(e)}
+      
+      >
+      Upload file
+      <VisuallyHiddenInput type="file" />
+    </Button>
     );
   }
 
@@ -244,7 +269,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
           ))}
         </div>
         <div className="mt-4 gap-4 flex justify-center items-center" >
-          <button
+          {/* <button
             type="submit"
             onClick={
               files
@@ -263,7 +288,18 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
             }}
           >
             {isLoading ? "Uploading.." : "Upload"}
-          </button>
+          </button> */}
+          <LoadingButton loading={isLoading} loadingIndicator="Loading…"  variant="outlined"
+          onClick={
+            files
+              ? (e) => {
+                  handleSubmit(e);
+                }
+              : () => setError("Please upload a file")
+          }
+          >
+        Upload
+      </LoadingButton>
           <button
             type="submit"
             onClick={

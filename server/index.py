@@ -147,13 +147,18 @@ def upload_files():
             try:
                 # full_response = ""
                 def generate():
+                    full_response = ""
                     for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
                         if "content" in resp.choices[0].delta:
                             text = resp.choices[0].delta.content
                             # print(text, end='', flush=True)  # Print the live data as it comes in
                             final_text =text.replace('\n', '\\n')
+                            full_response += final_text
                             yield f"{final_text}"
                             # time.sleep(1)  # Simulating a delay
+                    db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+            .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                  ,"source":"upload_file","field1":"response","field2":filename,"field3":full_response.strip()})
                 # response = openai_funcs.getResponse(False, llmmodel, message)
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 
@@ -295,16 +300,20 @@ def summarise_text():
             # logger.info(prompt_tokens)
 
             try:
-                full_response = ""
                 def generate():
+                    full_response = ""
                     for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
                         if "content" in resp.choices[0].delta:
                             text = resp.choices[0].delta.content
                             # print(text, end='', flush=True)  # Print the live data as it comes in
                             final_text =text.replace('\n', '\\n')
+                            full_response += final_text
                             yield f"{final_text}"
                             # time.sleep(1)  # Simulating a delay
-
+                    
+                    db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                                        ,"source":"paste_content","field1":"response","field2":full_response.strip()})
                 # response = openai_funcs.getResponse(False, llmmodel, message)
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 

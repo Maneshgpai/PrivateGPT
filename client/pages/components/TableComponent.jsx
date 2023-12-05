@@ -1,6 +1,20 @@
 import React from 'react';
 
 const TableComponent = ({ completeStream }) => {
+  const [width, setWidth] = React.useState(window.innerWidth);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // ]
   const safeParseJson = (jsonString) => {
     try {
       return JSON.parse(jsonString);
@@ -27,7 +41,9 @@ const TableComponent = ({ completeStream }) => {
     
     
     }}>
-      <table className="w-full border-collapse border border-gray-500" style={{
+     {
+     width > 768 ?
+     <table className="w-full border-collapse border border-gray-500 tableClass" style={{
                       backgroundColor: "#2E85FF",
                       color: "#000"
     
@@ -50,8 +66,33 @@ const TableComponent = ({ completeStream }) => {
           ))}
         </tbody>
       </table>
+      :
+      <div className="w-full flex flex-col items-center justify-center">
+        <div className="w-full rounded-md border  text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <table className="w-full" style={{
+                      backgroundColor: "#2E85FF",
+                      color: "#000"
+    
+    
+    }}>
+        {data.map((item, index) => (
+          <tbody key={index}>
+            {Object.entries(item).map(([key, value]) => (
+              <tr key={key}>
+                <td className="border border-gray-500 p-2">{key.charAt(0).toUpperCase() + key.slice(1)}:</td>
+                <td className="border border-gray-500 p-2">{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        ))}
+      </table>
+    </div>
+      </div>}
     </div>
   );
 };
 
 export default TableComponent;
+
+// This is the CSS media query to switch between the two renderings
+

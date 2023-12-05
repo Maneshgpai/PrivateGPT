@@ -4,17 +4,23 @@ import TextSnippet from "./input-elements/TextSnippet";
 import * as XLSX from 'xlsx';
 import TableComponent from "./TableComponent";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { colors } from "@/constant/colors";
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 
-export default function Chat({ pdfView = false }) {
+import { TextareaAutosize as BaseTextareaAutosize } from '@mui/base/TextareaAutosize';
+
+export default function Chat() {
   const [showChatBox, setShowChatBox] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fileSummaries, setFileSummaries] = useState([]);
   const [textSummaries, setTextSummaries] = useState([]);
-  const [activeTab, setActiveTab] = useState(pdfView ? "file" : "text");
+  const [activeTab, setActiveTab] = useState("text");
   const [streamResponse, setStreamResponse] = useState("");
   const [completeText, setCompleteText] = useState(false);
   const [completeStream, setCompleteStream] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const [pdfView, setPdfView] = useState(false)
 
   const toggleDropdown = () => setIsOpen(!isOpen);
   const handleTabChange = (tab) => {
@@ -36,6 +42,7 @@ export default function Chat({ pdfView = false }) {
   useEffect(() => {
     if (completeText) {
       setCompleteStream(streamResponse.replace(/\\n/g, '\n'))
+      setIsOpen(false)
     }
   }, [completeText]);
 
@@ -63,64 +70,81 @@ export default function Chat({ pdfView = false }) {
       style={{ minHeight: `calc(100vh - ${3}rem)`,
         backgroundColor: "#ebeef4",
         color: "#000"
-      
-      
+        
+        
       }}
-    >
+      >
       <div className="border-gray-100  shadow-none sticky top-0" style={{
-              backgroundColor: "#ebeef4",
-              color: "#000"
-            
-            
-            }}>
+        backgroundColor: "#ebeef4",
+        color: "#000"
+        
+        
+      }}>
         <h1 className="text-center py-3 font-bold text-xl text-gray-300">
           {/* Chat with your PDF */}
         </h1>
       </div>
       {/* {showChatBox ? ( */}
       <>
-        <div className="flex items-center justify-center mb-4">
+        <div className="flex items-center justify-center mb-4 mt-5">
           <div
             role="tablist"
             aria-orientation="horizontal"
-            className="inline-flex h-10 items-center justify-center rounded-md p-1 text-gray-300"
+            className="inline-flex h-10 items-center justify-center gap-5 rounded-md p-1 text-gray-300"
             tabIndex="0"
             data-orientation="horizontal"
-          >
+            >
             <button
               type="button"
               role="tab"
               aria-selected={activeTab === "text"}
-              onClick={() => handleTabChange("text")}
-              className={`${activeTab === "text"
-                  ? " text-foreground shadow-sm"
-                  : ""
-                } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
-              tabIndex="0"
-              data-orientation="horizontal"
-              data-radix-collection-item=""
+              onClick={() => {handleTabChange("text")
               
+              setPdfView(false)}}
+              className={`${activeTab === "text"
+              ? " text-foreground shadow-sm"
+              : ""
+            } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
+            tabIndex="0"
+            data-orientation="horizontal"
+            data-radix-collection-item=""
+            
+            style={{
+              backgroundColor: pdfView ? colors?.grey : colors?.primary,
+              color: colors.black
+              
+              
+            }}
+            
             >
-              {
-                pdfView ? "Upload PDF" : "Paste your note!"
-              }
+              <ContentPasteIcon/>
+              Paste your note!
             </button>
-            {/* <button
+            <button
                 type="button"
                 role="tab"
                 aria-selected={activeTab === "file"}
-                onClick={() => handleTabChange("file")}
+                onClick={() => {handleTabChange("file")
+                setPdfView(true)
+              }}
                 className={`${
-                  activeTab === "file"
+                  pdfView
                     ? "bg-gray-900 text-foreground shadow-sm"
                     : ""
                 } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
                 tabIndex="-1"
                 data-orientation="horizontal"
                 data-radix-collection-item=""
+                style={{
+                  backgroundColor: pdfView ? colors?.primary : colors?.grey,
+                  color: colors.black
+                
+                
+                }}
               >
+                <UploadFileIcon/>
                 Upload File
-              </button> */}
+              </button>
           </div>
         </div>
 
@@ -157,8 +181,8 @@ export default function Chat({ pdfView = false }) {
 
                 <div className="w-full rounded-md border border-gray-700 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 style={{
-                  backgroundColor: "#2E85FF",
-                  color: "#000"
+                  backgroundColor: colors?.primary,
+                  color: colors.black
                 
                 
                 }}>
@@ -166,8 +190,8 @@ export default function Chat({ pdfView = false }) {
                     className="w-full rounded-md border border-gray-600 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
                     onClick={toggleDropdown}
                     style={{
-                      backgroundColor: "#2E85FF",
-                      color: "#000"
+                      backgroundColor: colors?.buttons,
+                      color: colors.black
                     
                     
                     }}
@@ -233,8 +257,8 @@ export default function Chat({ pdfView = false }) {
                     className="w-full rounded-md border border-gray-600 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
                     onClick={toggleDropdown}
                     style={{
-                      backgroundColor: "#2E85FF",
-                      color: "#000"
+                      backgroundColor: colors.buttons,
+                      color: colors.black
                     
                     
                     }}
@@ -274,8 +298,8 @@ export default function Chat({ pdfView = false }) {
                 onClick={() => exportStreamToExcel(summary?.summary || streamResponse)}
                 className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-5 mb-5 m-5"
                 style={{
-                  backgroundColor: "#2E85FF",
-  color: "#000"
+                  backgroundColor: colors.buttons,
+  color: colors.black
 
 
 }}
