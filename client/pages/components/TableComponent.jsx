@@ -1,7 +1,7 @@
 import React from 'react';
 
 const TableComponent = ({ completeStream }) => {
-  const [width, setWidth] = React.useState(window.innerWidth);
+  const [width, setWidth] = React.useState(0);
 
   React.useEffect(() => {
     const handleResize = () => {
