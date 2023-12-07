@@ -1,18 +1,28 @@
+import * as React from 'react';
 import { useEffect, useState } from "react";
 import FileUpload from "./input-elements/FileUpload";
 import TextSnippet from "./input-elements/TextSnippet";
 import * as XLSX from 'xlsx';
+import Box from '@mui/material/Box';
 import TableComponent from "./TableComponent";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { colors } from "@/constant/colors";
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-
-import { TextareaAutosize as BaseTextareaAutosize } from '@mui/base/TextareaAutosize';
+import Tooltip from '@mui/material/Tooltip';
+import BottomNavigation from '@mui/material/BottomNavigation';
+import BottomNavigationAction from '@mui/material/BottomNavigationAction';
+import ContentPasteSearchRoundedIcon from '@mui/icons-material/ContentPasteSearchRounded';
+import LocalHospitalRoundedIcon from '@mui/icons-material/LocalHospitalRounded';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Button from '@mui/material/Button';
+import SkeletonTable from './SkeletonTable';
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
 
 export default function Chat() {
-  const [showChatBox, setShowChatBox] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [fileSummaries, setFileSummaries] = useState([]);
   const [textSummaries, setTextSummaries] = useState([]);
   const [activeTab, setActiveTab] = useState("text");
@@ -21,8 +31,8 @@ export default function Chat() {
   const [completeStream, setCompleteStream] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [pdfView, setPdfView] = useState(false)
+  const [value, setValue] = React.useState(0);
 
-  const toggleDropdown = () => setIsOpen(!isOpen);
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
@@ -55,9 +65,6 @@ export default function Chat() {
     XLSX.writeFile(wb, 'streamData.xlsx');
   };
 
-
-
-
   const clearAllContent = () => {
     setFileSummaries([]);
     setTextSummaries([]);
@@ -65,97 +72,54 @@ export default function Chat() {
   };
 
   return (
-    <div
-      className="container mx-auto  flex flex-col"
-      style={{ minHeight: `calc(100vh - ${3}rem)`,
-        backgroundColor: "#ebeef4",
-        color: "#000"
-        
-        
-      }}
-      >
-      <div className="border-gray-100  shadow-none sticky top-0" style={{
-        backgroundColor: "#ebeef4",
-        color: "#000"
-        
-        
-      }}>
-        <h1 className="text-center py-3 font-bold text-xl text-gray-300">
-          {/* Chat with your PDF */}
+    <div className="container mx-auto  flex flex-col"
+      style={{ minHeight: `calc(100vh - ${3}rem)`, backgroundColor: "#ebeef4", color: "#000" }}>
+
+      <div className="border-gray-100  shadow-none sticky top-0" style={{ backgroundColor: "#ebeef4", color: "#000" }}>
+        <h1 className="text-center py-3 font-bold text-xl text-gray-600">
+          Generate medical codes in a snap!
         </h1>
       </div>
-      {/* {showChatBox ? ( */}
       <>
-        <div className="flex items-center justify-center mb-4 mt-5">
-          <div
-            role="tablist"
-            aria-orientation="horizontal"
-            className="inline-flex h-10 items-center justify-center gap-5 rounded-md p-1 text-gray-300"
-            tabIndex="0"
-            data-orientation="horizontal"
+        <div div className='flex justify-center align-middle'>
+          <Box sx={{ width: 500 }}>
+            <BottomNavigation
+              showLabels
+              value={value}
+              onChange={(event, newValue) => {
+                setValue(newValue);
+              }
+              }
             >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === "text"}
-              onClick={() => {handleTabChange("text")
-              
-              setPdfView(false)}}
-              className={`${activeTab === "text"
-              ? " text-foreground shadow-sm"
-              : ""
-            } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
-            tabIndex="0"
-            data-orientation="horizontal"
-            data-radix-collection-item=""
-            
-            style={{
-              backgroundColor: pdfView ? colors?.grey : colors?.primary,
-              color: colors.black
-              
-              
-            }}
-            
-            >
-              <ContentPasteIcon/>
-              Paste your note!
-            </button>
-            <button
-                type="button"
-                role="tab"
+              <Tooltip title="Paste medical content"><BottomNavigationAction
+                aria-selected={activeTab === "text"}
+                label="Quick search"
+                icon={<ContentPasteSearchRoundedIcon />}
+                onClick={() => {
+                  handleTabChange("text")
+                  setPdfView(false)
+                }} /></Tooltip>
+
+              <Tooltip title="Upload medical note as PDF"><BottomNavigationAction
                 aria-selected={activeTab === "file"}
-                onClick={() => {handleTabChange("file")
-                setPdfView(true)
-              }}
-                className={`${
-                  pdfView
-                    ? "bg-gray-900 text-foreground shadow-sm"
-                    : ""
-                } inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`}
-                tabIndex="-1"
-                data-orientation="horizontal"
-                data-radix-collection-item=""
-                style={{
-                  backgroundColor: pdfView ? colors?.primary : colors?.grey,
-                  color: colors.black
-                
-                
+                onClick={() => {
+                  handleTabChange("file")
+                  setPdfView(true)
                 }}
-              >
-                <UploadFileIcon/>
-                Upload File
-              </button>
-          </div>
+                label="Upload notes"
+                icon={<UploadFileIcon />} /></Tooltip>
+
+              <Tooltip title="Connect to your favourite EHR or EMR"><BottomNavigationAction label="Connect EMR" icon={<LocalHospitalRoundedIcon />} /></Tooltip>
+            </BottomNavigation>
+          </Box>
         </div>
 
         {activeTab === "file" ? (
           <FileUpload result={handleFileUploadResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
-          completeText={completeText}
-          setCompleteText={setCompleteText}
-          setCompleteStream={setCompleteStream}
-          completeStream={completeStream}
-          
-          />
+            completeText={completeText}
+            setCompleteText={setCompleteText}
+            setCompleteStream={setCompleteStream}
+            completeStream={completeStream} />
         ) : (
           <TextSnippet result={handleTextSnippetResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
             completeText={completeText}
@@ -164,12 +128,12 @@ export default function Chat() {
             completeStream={completeStream}
           />
         )}
+        {/*===================== START : FILE UPLOAD SECTION =====================*/}
         {activeTab === "file" &&
           fileSummaries.map((summary, index) => (
             <div
               className="mt-4 flex w-full flex-col items-center"
-              key={index}
-            >
+              key={index}>
               <div className="w-4/5">
                 <div className="w-full py-2 flex flex-row justify-between text-sm relative cursor-pointer rounded-md font-bold text-gray-300 hover:text-gray-300">
                   <div className="flex flex-row">
@@ -177,65 +141,54 @@ export default function Chat() {
                       {summary.filename ? summary.filename : ""}
                     </span>
                   </div>
-                </div>
 
-                <div className="w-full rounded-md border border-gray-700 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{
-                  backgroundColor: colors?.primary,
-                  color: colors.black
-                
-                
-                }}>
-                <button
-                    className="w-full rounded-md border border-gray-600 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
-                    onClick={toggleDropdown}
-                    style={{
-                      backgroundColor: colors?.buttons,
-                      color: colors.black
-                    
-                    
-                    }}
-                  >
-                    {
-                      isOpen ? "Hide" : "Show" 
-                    } raw data
-                    {
-                      isOpen ? 
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-</svg>
-:
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                    </svg>
-
-                    }
-                  </button>
-                  {isOpen && (
-
-                    <div className="w-full  text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    style={{
-                      backgroundColor: "#2E85FF",
-                      color: "#000"
-                    
-                    
-
-                    }}>
-                    <span>{summary?.summary || streamResponse}</span>
+                  {/* ACCORDION FOR FILE UPLOAD */}
+                  <div className="text-sm text-gray-500 py-5" >
+                    <Accordion>
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header">
+                        <Typography><span className="text-sm text-gray-600 py-5" >Data is loading! Click to see progress. A tidy table will appear soon for download...</span></Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Typography><span className="text-sm text-gray-600 py-5" >{summary?.summary || streamResponse}</span></Typography>
+                      </AccordionDetails>
+                    </Accordion>
                   </div>
-                  )}
                 </div>
-                {completeStream && <TableComponent completeStream={completeStream} />}
-                
+
+                {/* TABLE COMPONENT FOR FILE UPLOAD */}
+                {/* {completeStream && <TableComponent completeStream={completeStream} />} */}
+                {completeStream ? (<TableComponent completeStream={completeStream} />) : (
+                  <div className="items-center">
+                  <Stack spacing={1}>
+                  <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+                  <SkeletonTable />
+                  <div className="mt-4 flex align-center justify-center"><Skeleton variant="rounded" width={120} height={30} /></div>
+                  </Stack>
+                  </div>
+                )}
+
               </div>
+
+              <div className="mt-4 flex w-full flex-col items-center">
+                <span>
+                  {completeStream && <Tooltip title="Download codes in a neat excel file!">
+                    <Button component="label" variant="contained" disableElevation startIcon={<FileDownloadIcon />}
+                      onClick={() => exportStreamToExcel(summary?.summary || streamResponse)}>Download</Button>
+                  </Tooltip>}
+                </span>
+              </div>
+
             </div>
           ))}
+        {/*========================================== START : TEXT PASTE SECTION ==========================================*/}
         {activeTab === "text" &&
           textSummaries.map((summary, index) => (
             <div
               className="mt-4 flex w-full flex-col items-center"
-              key={index}
-            >
+              key={index}>
               <div className="w-4/5">
                 <div className="w-full py-2 flex flex-row justify-between text-sm relative cursor-pointer rounded-md font-bold text-gray-300 hover:text-gray-300">
                   <div className="flex flex-row">
@@ -243,73 +196,48 @@ export default function Chat() {
                       {summary.filename ? summary.filename : ""}
                     </span>
                   </div>
-                  
                 </div>
 
-                <div className="w-full rounded-md border border-gray-800 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{
-                  backgroundColor: "#2E85FF",
-                  color: "#000"
-                
-                
-                }}>
-                  <button
-                    className="w-full rounded-md border border-gray-600 text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex justify-center"
-                    onClick={toggleDropdown}
-                    style={{
-                      backgroundColor: colors.buttons,
-                      color: colors.black
-                    
-                    
-                    }}
-                  >
-                    {
-                      isOpen ? "Hide" : "Show" 
-                    } raw data
-                    {
-                      isOpen ? 
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-</svg>
-:
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                    </svg>
+                {/* ACCORDION FOR TEXT PASTE */}
+                <div className="text-sm text-gray-500 py-5" >
+                  <Accordion>
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      aria-controls="panel1a-content"
+                      id="panel1a-header">
+                      <Typography><span className="text-sm text-gray-600 py-5" >Data is loading! Click to see progress. A tidy table will appear soon for download...</span></Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Typography><span className="text-sm text-gray-600 py-5" >{summary?.summary || streamResponse}</span></Typography>
+                    </AccordionDetails>
+                  </Accordion>
+                </div>
 
-                    }
-                  </button>
-                  {isOpen && (
-                    <div className="w-full  text-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    style={{
-                      backgroundColor: "#2E85FF",
-                      color: "#000"
-                    
-                    
-
-                    }}>
-                    <span>{summary?.summary || streamResponse}</span>
+                {/* TABLE COMPONENT FOR TEXT PASTE */}
+                {/* {completeStream && <TableComponent completeStream={completeStream} />} */}
+                {completeStream ? (<TableComponent completeStream={completeStream} />) : (
+                  <div className="items-center">
+                  <Stack spacing={1}>
+                  <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+                  <SkeletonTable />
+                  <div className="mt-4 flex align-center justify-center"><Skeleton variant="rounded" width={120} height={30} /></div>
+                  </Stack>
                   </div>
-                  )}
-                </div>
-                {completeStream && <TableComponent completeStream={completeStream} />}
+                )}
+
               </div>
-              <button
-                type="button"
-                onClick={() => exportStreamToExcel(summary?.summary || streamResponse)}
-                className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-5 mb-5 m-5"
-                style={{
-                  backgroundColor: colors.buttons,
-  color: colors.black
 
-
-}}
-              >
-                <FileDownloadIcon/>
-                Download codes
-              </button>
+              {/* DOWNLOAD BUTTON FOR TEXT PASTE */}
+              <div className="mt-4 flex w-full flex-col items-center">
+                <span>
+                  {completeStream && <Tooltip title="Download codes in a neat excel file!">
+                    <Button component="label" variant="contained" disableElevation startIcon={<FileDownloadIcon />}
+                      onClick={() => exportStreamToExcel(summary?.summary || completeStream)}>Download</Button>
+                  </Tooltip>}
+                </span>
+              </div>
             </div>
           ))}
-
       </>
     </div>
   );

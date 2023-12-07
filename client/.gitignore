@@ -38,3 +38,5 @@ next-env.d.ts
 .env
 
 app.log
+package-lock.json
+client/yarn.lock
