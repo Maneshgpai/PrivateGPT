@@ -26,10 +26,10 @@ export default function AppHeader({toggleSidebar}) {
   return (
     <div
       id="nav"
-      className="mx-auto px-4 border-b border-gray-100 dark:border-gray-600"
+      className="mx-auto px-4 border-gray-100 dark:border-gray-600"
     >
       <div className="relative flex h-12 items-center justify-between">
-        {
+        {/* {
           screenWidth < 768? (
         <div className=" inset-y-0 left-0 flex items-center">
           <Disclosure as='nav'>
@@ -46,21 +46,19 @@ export default function AppHeader({toggleSidebar}) {
           </Disclosure>
         </div>
           ):(
-
         <div className="flex flex-1 items-center justify-start sm:items-stretch">
           <div className="flex flex-shrink-0 items-center">
             <span className="">
               <Link
                 href="/"
-                className="text-lg font-semibold text-white dark:text-white"
-              >
-                MedCoder
+                className="text-lg font-semibold text-white dark:text-white">
+                
               </Link>
             </span>
           </div>
         </div>
           )
-        }
+        } */}
         <div className="lg:flex lg:flex-1 lg:justify-end">
           <SignedIn>
             <UserButton afterSignOutUrl="/" />

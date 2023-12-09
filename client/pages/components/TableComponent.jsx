@@ -1,6 +1,8 @@
 import React from 'react';
 
 const TableComponent = ({ completeStream }) => {
+  console.log("Hi 1")
+  console.log("1 TableComponent.jsx >> completeStream:",completeStream)
   const isBrowser = typeof window !== 'undefined'; // Check if window object is defined
 
   const [width, setWidth] = React.useState(isBrowser ? window.innerWidth : 0);
@@ -29,6 +31,7 @@ const TableComponent = ({ completeStream }) => {
   };
 
   const data = safeParseJson(completeStream);
+  console.log("2 TableComponent.jsx >> data:",data)
 
   if (!data || !Array.isArray(data)) {
     return <div>Invalid data format</div>;

@@ -19,6 +19,7 @@ import base64
 from google.cloud import firestore
 import pytz
 import datetime
+import random
 
 openai.api_key = os.environ['OPENAI_API_KEY']
 
@@ -112,12 +113,11 @@ def upload_files():
         firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
         firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
         db = firestore.Client.from_service_account_info(firestore_key_json)
-
-        db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-            .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                  ,"source":"upload_file","field1":"query","field2":filename,"field3":text})
-
-
+        now = datetime.datetime.utcnow()
+        # print (int((now.timestamp()*1000000))+random.randint(1000,9999))
+        query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
+        
+        query_text = text.strip()
         mod_response = openai.Moderation.create(input=text, )
         logger.info(mod_response)
         if (mod_response['results'][0]['flagged']):
@@ -125,7 +125,7 @@ def upload_files():
             logger.error(error)
             db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                      ,"source":"upload_file","field1":"error","field2":error})
+                      ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
             return jsonify({"message": error}), 401
         else:
             llmmodel = os.environ['DEFAULT_LLM_MODEL']
@@ -142,7 +142,6 @@ def upload_files():
             message = openai_funcs.setChatMsg('code_response', prompt)
             # logger.info(message)
             prompt_tokens = openai_funcs.num_tokens_from_messages(message)
-            # logger.info(prompt_tokens)
 
             try:
                 # full_response = ""
@@ -156,9 +155,19 @@ def upload_files():
                             full_response += final_text
                             yield f"{final_text}"
                             # time.sleep(1)  # Simulating a delay
+                    # db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    # .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                    #     ,"source":"upload_file","field1":"response","field2":filename,"field3":full_response.strip()})
+                    
                     db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-            .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                  ,"source":"upload_file","field1":"response","field2":filename,"field3":full_response.strip()})
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                        ,"source":"upload_file","query_id":query_id,"query":query_text,"response":full_response.strip(),"upload_file":filename})
+
+                    completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
+                    db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                        .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                            ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
+
                 # response = openai_funcs.getResponse(False, llmmodel, message)
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 
@@ -172,6 +181,9 @@ def upload_files():
                 capture_message(
                     traceback.format_exc(),
                 )
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
                 return jsonify({"message": error}), 401
             except APIError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists.'
@@ -183,6 +195,9 @@ def upload_files():
                     traceback.format_exc(),
                 )
 
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
                 return jsonify({"message": error}), 401
             except RateLimitError:
                 error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
@@ -193,6 +208,9 @@ def upload_files():
                 capture_message(
                     traceback.format_exc(),
                 )
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
                 return jsonify({"message": error}), 401
             except APIConnectionError:
                 error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
@@ -203,6 +221,9 @@ def upload_files():
                 capture_message(
                     traceback.format_exc(),
                 )
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
                 return jsonify({"message": error}), 401
             except ServiceUnavailableError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
@@ -213,6 +234,9 @@ def upload_files():
                 capture_message(
                     traceback.format_exc(),
                 )
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
                 return jsonify({"message": error}), 401
             except:
                 error = "Error: {}".format(traceback.format_exc())
@@ -223,12 +247,17 @@ def upload_files():
                 capture_message(
                     traceback.format_exc(),
                 )
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
                 return jsonify({"message": error}), 400
 
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
-        # print(traceback.format_exc())   
+        db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+            .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                  ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
         return jsonify({"message": error}), 400
 
 # def upload_files():
@@ -268,18 +297,21 @@ def summarise_text():
         firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
         firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
         db = firestore.Client.from_service_account_info(firestore_key_json)
+        query_id = str(random.randint(10000000,999999999999999999))
 
         data = request.get_json()
         if 'text' not in data:
             return jsonify({'error': 'Text not found in request'}), 400
         
         text = data['text']
-        logger.info(text)
+        query_text = text.strip()
         mod_response = openai.Moderation.create(input=text, )
         logger.info(mod_response)
         if (mod_response['results'][0]['flagged']):
             error = 'This text violates website\'s content policy! Please use content relevant to medical coding only.'
-            logger.error(error)
+            db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                      ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
             return jsonify({"message": error}), 401
         else:
             llmmodel = os.environ['DEFAULT_LLM_MODEL']
@@ -287,9 +319,9 @@ def summarise_text():
             # physicianType = request.args.get('selectedPhysicianType')
             # selectedCodeset = request.args.get('selectedCodeset')
             uid = request.args.get('uid')
-            db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                      ,"source":"paste_content","field1":"query","field2":text.strip()})
+            # db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+            #     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+            #           ,"source":"paste_content","field1":"query","field2":text.strip()})
 
             prompt = openai_funcs.setCodeGenPrompt(text.strip())
 
@@ -311,10 +343,20 @@ def summarise_text():
                             yield f"{final_text}"
                             # time.sleep(1)  # Simulating a delay
                     
+                    # db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    #                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                    #                     ,"source":"paste_content","field1":"response","field2":full_response.strip()})
+
                     db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                                        ,"source":"paste_content","field1":"response","field2":full_response.strip()})
-                # response = openai_funcs.getResponse(False, llmmodel, message)
+                        .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                            ,"source":"paste_content","query_id":query_id,"query":query_text,"response":full_response.strip()})
+
+                    completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
+                    db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                        .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                            ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
+
+
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 
             except AuthenticationError:
@@ -327,6 +369,9 @@ def summarise_text():
                 capture_message(
                     traceback.format_exc(),
                 )
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
                 return jsonify({"message": error}), 401
             except APIError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists.'
@@ -338,6 +383,9 @@ def summarise_text():
                     traceback.format_exc(),
                 )
 
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
                 return jsonify({"message": error}), 401
             except RateLimitError:
                 error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
@@ -348,6 +396,10 @@ def summarise_text():
                 capture_message(
                     traceback.format_exc(),
                 )
+
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
                 return jsonify({"message": error}), 401
             except APIConnectionError:
                 error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
@@ -358,6 +410,10 @@ def summarise_text():
                 capture_message(
                     traceback.format_exc(),
                 )
+
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
                 return jsonify({"message": error}), 401
             except ServiceUnavailableError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
@@ -368,6 +424,10 @@ def summarise_text():
                 capture_message(
                     traceback.format_exc(),
                 )
+
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
                 return jsonify({"message": error}), 401
             except:
                 error = "Error: {}".format(traceback.format_exc())
@@ -378,17 +438,11 @@ def summarise_text():
                 capture_message(
                     traceback.format_exc(),
                 )
+
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                          ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
                 return jsonify({"message": error}), 400
-
-            # summary = response['choices'][0]['message']['content']
-            # logger.info(summary)
-            
-            # completion_tokens = openai_funcs.num_tokens_from_response(summary)
-            # logger.info(completion_tokens)
-
-            # logger.info(openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens))
-
-            
 
             # summary1 = summary.replace('\n', '\\n')
             return jsonify([{"summary": "summary"}]), 200
@@ -396,6 +450,10 @@ def summarise_text():
         error = "Error: {}".format(str(e))
         logger.error(error)
         # print(traceback.format_exc())   
+
+        db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+            .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                  ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
         return jsonify({"message": error}), 400
 
 

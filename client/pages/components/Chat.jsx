@@ -2,12 +2,16 @@ import * as React from 'react';
 import { useEffect, useState } from "react";
 import FileUpload from "./input-elements/FileUpload";
 import TextSnippet from "./input-elements/TextSnippet";
+import QuickSearch from "./input-elements/QuickSearch";
+import QuickSearchText from "./input-elements/QuickSearchText";
+import QuickSearchFile from "./input-elements/QuickSearchFile";
+// import NewIntegration from "../integrations";
 import * as XLSX from 'xlsx';
 import Box from '@mui/material/Box';
 import TableComponent from "./TableComponent";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import Tooltip from '@mui/material/Tooltip';
+// import Tooltip from '@mui/material/Tooltip';
 import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import ContentPasteSearchRoundedIcon from '@mui/icons-material/ContentPasteSearchRounded';
@@ -27,8 +31,10 @@ export default function Chat() {
   const [textSummaries, setTextSummaries] = useState([]);
   const [activeTab, setActiveTab] = useState("text");
   const [streamResponse, setStreamResponse] = useState("");
+  const [textStreamResponse] = useState("");/////////
   const [completeText, setCompleteText] = useState(false);
   const [completeStream, setCompleteStream] = useState(false);
+  const [textCompleteStream] = useState(false);/////////
   const [isOpen, setIsOpen] = useState(true);
   const [pdfView, setPdfView] = useState(false)
   const [value, setValue] = React.useState(0);
@@ -51,6 +57,7 @@ export default function Chat() {
 
   useEffect(() => {
     if (completeText) {
+      // setCompleteStream(textStreamResponse.replace(/\\n/g, '\n'))///////////
       setCompleteStream(streamResponse.replace(/\\n/g, '\n'))
       setIsOpen(false)
     }
@@ -62,7 +69,7 @@ export default function Chat() {
     const ws = XLSX.utils.json_to_sheet(jsonData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, 'streamData.xlsx');
+    XLSX.writeFile(wb, 'response.xlsx');
   };
 
   const clearAllContent = () => {
@@ -81,7 +88,7 @@ export default function Chat() {
         </h1>
       </div>
       <>
-        <div div className='flex justify-center align-middle'>
+        <div className='flex justify-center align-middle'>
           <Box sx={{ width: 500 }}>
             <BottomNavigation
               showLabels
@@ -91,43 +98,80 @@ export default function Chat() {
               }
               }
             >
-              <Tooltip title="Paste medical content"><BottomNavigationAction
+              {/* <Tooltip title="Paste medical content"> */}
+                <BottomNavigationAction
                 aria-selected={activeTab === "text"}
-                label="Quick search"
+                label="Paste text"
                 icon={<ContentPasteSearchRoundedIcon />}
                 onClick={() => {
                   handleTabChange("text")
                   setPdfView(false)
-                }} /></Tooltip>
+                }} />
+                {/* </Tooltip> */}
 
-              <Tooltip title="Upload medical note as PDF"><BottomNavigationAction
+              {/* <Tooltip title="Upload medical note as PDF"> */}
+                <BottomNavigationAction
                 aria-selected={activeTab === "file"}
                 onClick={() => {
                   handleTabChange("file")
                   setPdfView(true)
                 }}
                 label="Upload notes"
-                icon={<UploadFileIcon />} /></Tooltip>
+                icon={<UploadFileIcon />} />
+                {/* </Tooltip> */}
 
-              <Tooltip title="Connect to your favourite EHR or EMR"><BottomNavigationAction label="Connect EMR" icon={<LocalHospitalRoundedIcon />} /></Tooltip>
+              {/* <Tooltip title="Quick Search medical codes"> */}
+                <BottomNavigationAction
+                aria-selected={activeTab === "qiksearch"}
+                label="Quick search"
+                icon={<ContentPasteSearchRoundedIcon />}
+                disabled
+                onClick={() => {
+                  handleTabChange("qiksearch")
+                  // setPdfView(false)
+                }} />
+                {/* </Tooltip> */}
+
+              {/* <Tooltip title="Connect to your favourite EHR or EMR"> */}
+                <BottomNavigationAction
+                aria-selected={activeTab === "newemr"}
+                disabled
+                onClick={() => {
+                  handleTabChange("newemr")
+                  setPdfView(true)
+                }}
+                label="Connect EMR" icon={<LocalHospitalRoundedIcon />} />
+                {/* </Tooltip> */}
             </BottomNavigation>
           </Box>
         </div>
 
-        {activeTab === "file" ? (
-          <FileUpload result={handleFileUploadResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
-            completeText={completeText}
-            setCompleteText={setCompleteText}
-            setCompleteStream={setCompleteStream}
-            completeStream={completeStream} />
-        ) : (
-          <TextSnippet result={handleTextSnippetResult} Olddata={textSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
-            completeText={completeText}
-            setCompleteText={setCompleteText}
-            setCompleteStream={setCompleteStream}
-            completeStream={completeStream}
-          />
+        {activeTab === "file" && (
+          <FileUpload result={handleFileUploadResult} Olddata={fileSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
+          completeText={completeText}
+          setCompleteText={setCompleteText}
+          setCompleteStream={setCompleteStream}
+          completeStream={completeStream} />
         )}
+
+        {activeTab === "text" && (
+          <TextSnippet 
+           result={handleTextSnippetResult} 
+           Olddata={textSummaries} 
+           streamResponse={streamResponse} //{textStreamResponse}//////////
+           setStreamResponse={setStreamResponse} 
+           clearAllContent={clearAllContent}
+           completeText={completeText}
+           setCompleteText={setCompleteText}
+           setCompleteStream={setCompleteStream}
+           completeStream={completeStream} //textCompleteStream}//////////
+          {...console.log('TextSnippet >> setTextSummaries:',setTextSummaries)}
+          {...console.log('TextSnippet >> Olddata:',textSummaries)}
+          {...console.log('TextSnippet >> streamResponse:',streamResponse)}
+          {...console.log('TextSnippet >> setStreamResponse:',setStreamResponse)}
+        />
+        )}
+
         {/*===================== START : FILE UPLOAD SECTION =====================*/}
         {activeTab === "file" &&
           fileSummaries.map((summary, index) => (
@@ -149,7 +193,7 @@ export default function Chat() {
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="panel1a-content"
                         id="panel1a-header">
-                        <Typography><span className="text-sm text-gray-600 py-5" >Data is loading! Click to see progress. A tidy table will appear soon for download...</span></Typography>
+                      {completeStream ? (<Typography><span className="text-sm text-gray-600 py-5" >Response generated.</span></Typography>) : (<Typography><span className="text-sm text-gray-600 py-5" >Response is generating! Click to view progress.</span></Typography>)}
                       </AccordionSummary>
                       <AccordionDetails>
                         <Typography><span className="text-sm text-gray-600 py-5" >{summary?.summary || streamResponse}</span></Typography>
@@ -174,10 +218,12 @@ export default function Chat() {
 
               <div className="mt-4 flex w-full flex-col items-center">
                 <span>
-                  {completeStream && <Tooltip title="Download codes in a neat excel file!">
+                  {completeStream && 
+                  // <Tooltip title="Download codes in a neat excel file!">
                     <Button component="label" variant="contained" disableElevation startIcon={<FileDownloadIcon />}
                       onClick={() => exportStreamToExcel(summary?.summary || streamResponse)}>Download</Button>
-                  </Tooltip>}
+                  // </Tooltip>
+                  }
                 </span>
               </div>
 
@@ -205,17 +251,19 @@ export default function Chat() {
                       expandIcon={<ExpandMoreIcon />}
                       aria-controls="panel1a-content"
                       id="panel1a-header">
-                      <Typography><span className="text-sm text-gray-600 py-5" >Data is loading! Click to see progress. A tidy table will appear soon for download...</span></Typography>
+                      {completeStream ? (<Typography><span className="text-sm text-gray-600 py-5" >Response generated.</span></Typography>) : (<Typography><span className="text-sm text-gray-600 py-5" >Response is generating! Click to view progress.</span></Typography>)}
                     </AccordionSummary>
                     <AccordionDetails>
-                      <Typography><span className="text-sm text-gray-600 py-5" >{summary?.summary || streamResponse}</span></Typography>
+                      <Typography><span className="text-sm text-gray-600 py-5" >{summary?.summary || streamResponse //textStreamResponse//////////
+                      }</span></Typography>
                     </AccordionDetails>
                   </Accordion>
                 </div>
 
                 {/* TABLE COMPONENT FOR TEXT PASTE */}
                 {/* {completeStream && <TableComponent completeStream={completeStream} />} */}
-                {completeStream ? (<TableComponent completeStream={completeStream} />) : (
+                {completeStream ? (<TableComponent completeStream={completeStream //textCompleteStream///////////
+                } />) : (
                   <div className="items-center">
                   <Stack spacing={1}>
                   <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
@@ -230,10 +278,13 @@ export default function Chat() {
               {/* DOWNLOAD BUTTON FOR TEXT PASTE */}
               <div className="mt-4 flex w-full flex-col items-center">
                 <span>
-                  {completeStream && <Tooltip title="Download codes in a neat excel file!">
+                  {completeStream && 
+                  // <Tooltip title="Download codes in a neat excel file!">
                     <Button component="label" variant="contained" disableElevation startIcon={<FileDownloadIcon />}
-                      onClick={() => exportStreamToExcel(summary?.summary || completeStream)}>Download</Button>
-                  </Tooltip>}
+                      onClick={() => exportStreamToExcel(summary?.summary || completeStream //textCompleteStream/////////
+                      )}>Download</Button>
+                  // </Tooltip>
+                  }
                 </span>
               </div>
             </div>

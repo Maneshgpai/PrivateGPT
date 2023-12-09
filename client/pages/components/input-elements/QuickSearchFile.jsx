@@ -8,12 +8,9 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded';
 import ReplayIcon from '@mui/icons-material/Replay';
-// import Tooltip from '@mui/material/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddToDriveOutlinedIcon from '@mui/icons-material/AddToDriveOutlined';
-import DevicesOutlinedIcon from '@mui/icons-material/DevicesOutlined';
-import Box from '@mui/material/Box';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -28,7 +25,7 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 
-function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearAllContent, completeText, setCompleteText, setCompleteStream, completeStream }) {
+function FileUpload({ result, Olddata, streamFileResponse, setStreamFileResponse, clearAllContent, completeFile, setCompleteFile, setCompleteFileStream, completeFileStream }) {
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
@@ -41,9 +38,9 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
       return null;
     }
     setIsLoading(true);
-    setCompleteText(false)
-    setCompleteStream(false)
-    setStreamResponse("")
+    setCompleteFile(false)
+    setCompleteFileStream(false)
+    setStreamFileResponse("")
 
     const formData = new FormData();
     files.forEach((file) => {
@@ -51,7 +48,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
     });
 
     try {
-      setStreamResponse("")
+      setStreamFileResponse("")
       const headers = new Headers();
       const queryParams = new URLSearchParams();
       queryParams.append("uid", user.id);
@@ -69,7 +66,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
 
       if (response.status === 200) {
         const reader = response.body.getReader();
-        setStreamResponse("")
+        setStreamFileResponse("")
         const processStream = async () => {
           while (true) {
             const { done, value } = await reader.read();
@@ -78,16 +75,16 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
               // console.log("Stream complete")
               setIsLoading(false);
               result([{
-                summary: streamResponse.replace(/\\n/g, '\n')
+                summary: streamFileResponse.replace(/\\n/g, '\n')
 
               }])
-              setCompleteText(true)
+              setCompleteFile(true)
               break;
             }
             let chunk = new TextDecoder("utf-8").decode(value);
             // console.log("Stream value:",chunk)
             result([{}])
-            setStreamResponse((prev) => prev + chunk)
+            setStreamFileResponse((prev) => prev + chunk)
             // let chunk = 
 
 
@@ -99,7 +96,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
 
       } else {
         setIsLoading(false);
-        const data = JSON.parse(responseText);
+        const data = JSON.parse(response);
         setError(data.message);
       }
     } catch (error) {
@@ -127,20 +124,19 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
   };
 
   return (
-
     <div className="flex w-full flex-col items-center">
       <div className=" w-4/5">
         <div className="mt-10">
           <form
             onSubmit={handleSubmit}
             className="mt-3 flex flex-col justify-center align-middle items-center w-full">
-            <div className="flex justify-center align-middle w-full" >
             {getFileUploadComponent()}
-            </div>
+
             <div className="text-sm text-gray-500 py-2" >
-              Upload PDF file only
+              Upload only PDFs
             </div>
           </form>
+          {/* </div> */}
 
           {files.length ? 
           
@@ -158,67 +154,60 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
 
           <div className="mt-4 gap-4 text-center flex justify-center">
             {/* UPLOAD BUTTON */}
-            {/* <Tooltip title="Upload file"> */}
+            <Tooltip title="Upload file">
               <LoadingButton
                 loading={isLoading}
                 variant="contained"
                 disableElevation
                 onClick={files ? (e) => { handleSubmit(e); } : () => setError("Please upload a file")}
                 className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-              ><FileUploadOutlinedIcon /></LoadingButton>
-              {/* </Tooltip> */}
+              ><FileUploadOutlinedIcon /></LoadingButton></Tooltip>
 
             {/* REGENERATE BUTTON */}
-            {completeStream &&
-              // <Tooltip title="Regenerate response">
+            {completeFileStream &&
+              <Tooltip title="Regenerate response">
                 <Button
                   loading={isLoading}
                   variant="contained"
                   disableElevation
                   onClick={files ? (e) => { handleSubmit(e); } : () => setError("Please upload a file")}
                   className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-                ><ReplayIcon /></Button>
-                // </Tooltip>
+                ><ReplayIcon /></Button></Tooltip>
             }
 
             {/* CLEAR BUTTON */}
-            {!(completeStream) &&
-              // <span><Tooltip title="Regenerate response">
+            {!(completeFileStream) &&
+              <Tooltip title="Regenerate response">
                 <Button
                   disabled
                   variant="outlined"
                   disableElevation
                   className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-                ><ReplayIcon /></Button>
-                // </Tooltip></span>
+                ><ReplayIcon /></Button></Tooltip>
             }
 
-            {!(completeStream) &&
-              // <span><Tooltip title="Clear response">
+            {!(completeFileStream) &&
+              <Tooltip title="Clear response">
                 <Button
                   disabled
                   variant="outlined"
                   disableElevation
                   className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-                ><ClearRoundedIcon /></Button>
-                // </Tooltip></span>
-              }
-            {completeStream &&
-              // <Tooltip title="Clear response">
+                ><ClearRoundedIcon /></Button></Tooltip>}
+            {completeFileStream &&
+              <Tooltip title="Clear response">
                 <Button
                   loading={isLoading}
                   variant="outlined"
                   onClick={() => {
                     clearAllContent()
-                    setStreamResponse("")
-                    setCompleteText(false)
-                    setCompleteStream("")
+                    setStreamFileResponse("")
+                    setCompleteFile(false)
+                    setCompleteFileStream("")
                     handleDeleteFile()
                   }}
                   className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-                ><ClearRoundedIcon /></Button>
-                // </Tooltip>
-              }
+                ><ClearRoundedIcon /></Button></Tooltip>}
           </div>
 
           {error ? (
@@ -236,16 +225,9 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
 
   function getFileUploadComponent() {
     return (
-      <div className="flex flex-row gap-4">
-      <Button component="label" variant="contained" disableElevation 
-        onChange={(e) => handleOnChange(e)}
-        sx={{ textTransform: 'capitalize', fontSize: 13, mx: 5 }}><DevicesOutlinedIcon sx={{mr:1, size:"small" }}/>Browse file from computer<VisuallyHiddenInput type="file" multiple accept="application/pdf" />
+      <Button component="label" variant="contained" disableElevation startIcon={<CloudUploadIcon />}
+        onChange={(e) => handleOnChange(e)}>Browse files<VisuallyHiddenInput type="file" multiple accept="application/pdf" />
       </Button>
-      <Button component="label" variant="contained" disableElevation 
-        onChange={(e) => handleOnChange(e)} disabled
-        sx={{ textTransform: 'capitalize', fontSize: 13, mx: 'auto' }}><AddToDriveOutlinedIcon sx={{mr:1, size:"small" }}/>Browse file from Google Drive<VisuallyHiddenInput type="file" multiple accept="application/pdf" />
-      </Button>
-      </div>
     );
   }
 

@@ -5,12 +5,12 @@ import { colors } from "@/constant/colors";
 import { TextareaAutosize as BaseTextareaAutosize } from '@mui/base/TextareaAutosize';
 import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
-// import Tooltip from '@mui/material/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded';
 import ReplayIcon from '@mui/icons-material/Replay';
 
-function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clearAllContent, completeText, setCompleteText, setCompleteStream, completeStream }) {
+function TextSnippet({ result, Olddata, streamTextResponse, setStreamTextResponse, clearAllContent, completeText, setCompleteText, setCompleteTextStream, completeTextStream }) {
   const [text, setText] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -24,7 +24,7 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
     }
     setIsLoading(true);
     setCompleteText(false)
-    setCompleteStream(false)
+    setCompleteTextStream(false)
 
     try {
       const headers = new Headers();
@@ -93,11 +93,8 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
         <div className="mx-auto">
           <form onSubmit={handleSubmit}
             className="mt-10 flex flex-col justify-center align-middle">
-            <div className="text-sm text-gray-800 py-2" >
-              You can input any ailment, condition, procedure, medication or even paste the content of an entire clinical note, the system will respond with correponding ICD-10, CPT or HCPCS codes.
-            </div>
-            {/* TEXT AREA */}
 
+            {/* TEXT AREA */}
             <BaseTextareaAutosize
               id="text-snippet"
               name="text-snippet"
@@ -110,62 +107,60 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
             />
             <div className="mt-6 text-center gap-4 flex justify-center">
               {/* SUBMIT BUTTON */}
-              {/* <Tooltip title="Submit query"> */}
+              <Tooltip title="Submit query">
                 <LoadingButton
                   loading={isLoading}
                   variant="contained"
                   disableElevation
                   onClick={handleSubmit}
                   className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-                ><SearchRoundedIcon /></LoadingButton>
-                {/* </Tooltip> */}
+                ><SearchRoundedIcon /></LoadingButton></Tooltip>
 
               {/* REGENERATE BUTTON */}
-              {completeStream &&
-                // <Tooltip title="Regenerate response">
+              {completeTextStream &&
+                <Tooltip title="Regenerate response">
                   <Button
                     loading={isLoading}
                     variant="contained"
                     disableElevation
                     onClick={handleSubmit}
                     className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-                  ><ReplayIcon /></Button>
-                  // </Tooltip>
+                  ><ReplayIcon /></Button></Tooltip>
               }
 
-              {!(completeStream) &&
-                <Button
+              {!(completeTextStream) &&
+                <Tooltip title="Regenerate response">
+                  <Button
                     disabled
                     variant="outlined"
                     disableElevation
                     className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-                  ><ReplayIcon /></Button>
+                  ><ReplayIcon /></Button></Tooltip>
               }
 
               {/* CLEAR BUTTON */}
-              {!(completeStream) &&
-                <Button
+              {!(completeTextStream) &&
+                <Tooltip title="Clear response">
+                  <Button
                     disabled
                     variant="outlined"
                     disableElevation
                     className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-                  ><ClearRoundedIcon /></Button>}
-              {completeStream &&
-                // <Tooltip title="Clear response">
+                  ><ClearRoundedIcon /></Button></Tooltip>}
+              {completeTextStream &&
+                <Tooltip title="Clear response">
                   <Button
                     loading={isLoading}
                     variant="outlined"
                     onClick={() => {
                       clearAllContent()
                       setText("")
-                      setStreamResponse("")
+                      setStreamTextResponse("")
                       setCompleteText(false)
-                      setCompleteStream("")
+                      setCompleteTextStream("")
                     }}
                     className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
-                  ><ClearRoundedIcon /></Button>
-                  // </Tooltip>
-                }
+                  ><ClearRoundedIcon /></Button></Tooltip>}
 
             </div>
           </form>

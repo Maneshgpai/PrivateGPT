@@ -1,4 +1,4 @@
-import { Disclosure} from "@headlessui/react";
+import { Disclosure } from "@headlessui/react";
 import Header from "./Header";
 import { useEffect, useState } from "react";
 import * as React from 'react';
@@ -88,6 +88,11 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 export default function Layout(props) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -108,31 +113,17 @@ export default function Layout(props) {
       icon: <Settings />,
       link: "/settings",
     },
-    {
-      name: "Coming soon",
-      icon: <NewReleasesRoundedIcon />,
-      link: "/",
-    },
-    {
-      name: "Coming soon",
-      icon: <NewReleasesRoundedIcon />,
-      link: "/",
-    },
-    {
-      name: "Coming soon",
-      icon: <NewReleasesRoundedIcon />,
-      link: "/",
-    },
-
 
   ]
 
   return (
-    <Box sx={{ display: 'flex' , minWidth: 300}}  >
-      <CssBaseline />
-      
-      {/* TOP APP BAR  */}
-      {/* <AppBar position="fixed" open={open} style={{ backgroundColor: "#ebeef4", color: "#000" }}>
+    <div>
+
+      <Header toggleSidebar={toggleSidebar} />
+      <Box sx={{ display: 'flex', minWidth: 300 }}  >
+        <CssBaseline />
+        {/* TOP APP BAR  */}
+        {/* <AppBar position="fixed" open={open} style={{ backgroundColor: "#ebeef4", color: "#000" }}>
         <Toolbar style={{ backgroundColor: "#ebeef4", color: "#000" }}>
           <IconButton
             color="inherit"
@@ -148,43 +139,45 @@ export default function Layout(props) {
         </Toolbar>
       </AppBar> */}
 
-      <Drawer variant="permanent" open={open} style={{ backgroundColor: "#ebeef4", color: "#000" }} >
-        {/* <DrawerHeader > */}
+        <Drawer variant="permanent" open={open} style={{ backgroundColor: "#ebeef4", color: "#000" }} >
+          {/* <DrawerHeader > */}
           {/* <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <MenuIcon />}
           </IconButton> */}
-        {/* </DrawerHeader> */}
-        {/* <Divider /> */}
+          {/* </DrawerHeader> */}
+          {/* <Divider /> */}
 
-        <List style={{ backgroundColor: "#ebeef4", color: "#000" }}>
-          {sideData.map((item, index) => (
-            <ListItem key={index} disablePadding sx={{ display: 'block'}} style={{ backgroundColor: "#ebeef4", color: "#000" }}>
-              <Link href={item?.link}
-                rel="noreferrer">
-                <Tooltip title={item?.name} placement="right" >
-                <ListItemButton
-                  sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5, }} >
-                  <ListItemIcon
-                    sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center',}}>
-                    {item?.icon}
-                    {/* {item?.name} */}
-                  </ListItemIcon>
-                  {/* <ListItemText primary={item?.name} sx={{ opacity: open ? 1 : 0 }} /> */}
-                </ListItemButton>
-                </Tooltip>
-              </Link>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-      </Drawer>
-      
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <div className="flex flex-grow flex-col md:flex-row w-full overflow-y-auto" >
-          {props.children}
-        </div>
+          <List style={{ backgroundColor: "#ebeef4", color: "#000" }}>
+            {sideData.map((item, index) => (
+              <ListItem key={index} disablePadding sx={{ display: 'block' }} style={{ backgroundColor: "#ebeef4", color: "#000" }}>
+                <Link href={item?.link}
+                  rel="noreferrer">
+                  <Tooltip title={item?.name} placement="right" >
+                    <ListItemButton
+                      sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5, }} >
+                      <ListItemIcon
+                        sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center', }}>
+                        {item?.icon}
+                        {/* {item?.name} */}
+                      </ListItemIcon>
+                      {/* <ListItemText primary={item?.name} sx={{ opacity: open ? 1 : 0 }} /> */}
+                    </ListItemButton>
+                  </Tooltip>
+                </Link>
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+        </Drawer>
+
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}
+        >
+          <div className="flex flex-grow flex-col md:flex-row w-full overflow-y-auto" >
+            {props.children}
+          </div>
+        </Box>
+
       </Box>
-
-    </Box>
+    </div>
   );
 }
