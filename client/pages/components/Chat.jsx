@@ -31,9 +31,12 @@ export default function Chat() {
   const [textSummaries, setTextSummaries] = useState([]);
   const [activeTab, setActiveTab] = useState("text");
   const [streamResponse, setStreamResponse] = useState("");
+  const [fileStreamResponse, setFileStreamResponse] = useState("");
   const [textStreamResponse] = useState("");/////////
   const [completeText, setCompleteText] = useState(false);
+  const [completeFile, setCompleteFile] = useState(false);
   const [completeStream, setCompleteStream] = useState(false);
+  const [completeFileStream, setCompleteFileStream] = useState(false);
   const [textCompleteStream] = useState(false);/////////
   const [isOpen, setIsOpen] = useState(true);
   const [pdfView, setPdfView] = useState(false)
@@ -147,11 +150,11 @@ export default function Chat() {
         </div>
 
         {activeTab === "file" && (
-          <FileUpload result={handleFileUploadResult} Olddata={fileSummaries} streamResponse={streamResponse} setStreamResponse={setStreamResponse} clearAllContent={clearAllContent}
-          completeText={completeText}
-          setCompleteText={setCompleteText}
-          setCompleteStream={setCompleteStream}
-          completeStream={completeStream} />
+          <FileUpload result={handleFileUploadResult} Olddata={fileSummaries} streamResponse={fileStreamResponse} setStreamResponse={setFileStreamResponse} clearAllContent={clearAllContent}
+          completeText={completeFile}
+          setCompleteText={setCompleteFile}
+          setCompleteStream={setCompleteFileStream}
+          completeStream={completeFileStream} />
         )}
 
         {activeTab === "text" && (
@@ -193,10 +196,10 @@ export default function Chat() {
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="panel1a-content"
                         id="panel1a-header">
-                      {completeStream ? (<Typography><span className="text-sm text-gray-600 py-5" >Response generated.</span></Typography>) : (<Typography><span className="text-sm text-gray-600 py-5" >Response is generating! Click to view progress.</span></Typography>)}
+                      {completeFileStream ? (<Typography><span className="text-sm text-gray-600 py-5" >Response generated.</span></Typography>) : (<Typography><span className="text-sm text-gray-600 py-5" >Response is generating! Click to view progress.</span></Typography>)}
                       </AccordionSummary>
                       <AccordionDetails>
-                        <Typography><span className="text-sm text-gray-600 py-5" >{summary?.summary || streamResponse}</span></Typography>
+                        <Typography><span className="text-sm text-gray-600 py-5" >{summary?.summary || fileStreamResponse}</span></Typography>
                       </AccordionDetails>
                     </Accordion>
                   </div>
@@ -204,7 +207,7 @@ export default function Chat() {
 
                 {/* TABLE COMPONENT FOR FILE UPLOAD */}
                 {/* {completeStream && <TableComponent completeStream={completeStream} />} */}
-                {completeStream ? (<TableComponent completeStream={completeStream} />) : (
+                {completeFileStream ? (<TableComponent completeStream={completeFileStream} />) : (
                   <div className="items-center">
                   <Stack spacing={1}>
                   <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
@@ -218,10 +221,10 @@ export default function Chat() {
 
               <div className="mt-4 flex w-full flex-col items-center">
                 <span>
-                  {completeStream && 
+                  {completeFileStream && 
                   // <Tooltip title="Download codes in a neat excel file!">
                     <Button component="label" variant="contained" disableElevation startIcon={<FileDownloadIcon />}
-                      onClick={() => exportStreamToExcel(summary?.summary || streamResponse)}>Download</Button>
+                      onClick={() => exportStreamToExcel(summary?.summary || fileStreamResponse)}>Download</Button>
                   // </Tooltip>
                   }
                 </span>

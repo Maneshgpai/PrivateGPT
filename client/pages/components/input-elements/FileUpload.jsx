@@ -82,6 +82,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
 
               }])
               setCompleteText(true)
+              setCompleteStream(streamResponse.replace(/\\n/g, '\n'))
               break;
             }
             let chunk = new TextDecoder("utf-8").decode(value);
