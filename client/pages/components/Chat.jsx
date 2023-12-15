@@ -65,6 +65,13 @@ export default function Chat() {
       setIsOpen(false)
     }
   }, [completeText]);
+  useEffect(() => {
+    if (completeFile) {
+      // setCompleteStream(textStreamResponse.replace(/\\n/g, '\n'))///////////
+      setCompleteFileStream(fileStreamResponse.replace(/\\n/g, '\n'))
+      setIsOpen(false)
+    }
+  }, [completeFile]);
 
 
   const exportStreamToExcel = (streamData) => {
