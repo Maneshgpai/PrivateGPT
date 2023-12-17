@@ -93,6 +93,7 @@ def upload_files():
     files = request.files.getlist("files")
 
     summaries = []
+    allFiles = []
 
     try:
         for file in files:
@@ -106,6 +107,9 @@ def upload_files():
                 for page_num in range(len(reader.pages)):
                     page = reader.pages[page_num]
                     text = page.extract_text()
+                    allFiles.append(
+                        {"filename": filename, "text": text}
+                    )
                     logger.info(text)
         
         uid = request.args.get('uid')
@@ -118,7 +122,7 @@ def upload_files():
         query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
         
         query_text = text.strip()
-        mod_response = openai.Moderation.create(input=text, )
+        mod_response = openai.Moderation.create(input=str(allFiles), )
         logger.info(mod_response)
         if (mod_response['results'][0]['flagged']):
             error = 'This text violates website\'s content policy! Please use content relevant to medical coding only.'
@@ -134,16 +138,18 @@ def upload_files():
             # selectedCodeset = request.args.get('selectedCodeset')
             
             # logger.info(llmmodel)
-            prompt = openai_funcs.setCodeGenPrompt(text.strip())
-            # logger.info(prompt)
-
-            # 'summarise' for Summarising a medical note during a file upload.
-            # 'code_response' for Generating medical codes directly from the text pasted
-            message = openai_funcs.setChatMsg('code_response', prompt)
-            # logger.info(message)
-            prompt_tokens = openai_funcs.num_tokens_from_messages(message)
 
             try:
+                print('text', allFiles)
+                # prompt = openai_funcs.setCodeGenPrompt(text.strip())
+                prompt = openai_funcs.setCodeGenPrompt(str(allFiles))
+                # logger.info(prompt)
+
+                # 'summarise' for Summarising a medical note during a file upload.
+                # 'code_response' for Generating medical codes directly from the text pasted
+                message = openai_funcs.setChatMsg('code_response', prompt)
+                # logger.info(message)
+                prompt_tokens = openai_funcs.num_tokens_from_messages(message)
                 # full_response = ""
                 def generate():
                     full_response = ""
@@ -252,6 +258,7 @@ def upload_files():
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
                 return jsonify({"message": error}), 400
 
+    
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
@@ -449,7 +456,7 @@ def summarise_text():
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
-        # print(traceback.format_exc())   
+        print(traceback.format_exc())   
 
         db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
             .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -458,6 +465,6 @@ def summarise_text():
 
 
 if __name__ == "__main__":
-    # app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
-    app.run(debug=True, port=8080) ### For Local host
+    app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
+    # app.run(debug=True, port=8080) ### For Local host
     # app.run(port=8080) ### For Local host
