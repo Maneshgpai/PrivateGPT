@@ -83,9 +83,11 @@ export default function Chat() {
   };
 
   const clearAllContent = () => {
-    setFileSummaries([]);
     setTextSummaries([]);
     setStreamResponse("");
+  };
+  const clearAllFileContent = () => {
+    setFileSummaries([]);
   };
 
   return (
@@ -157,7 +159,7 @@ export default function Chat() {
         </div>
 
         {activeTab === "file" && (
-          <FileUpload result={handleFileUploadResult} Olddata={fileSummaries} streamResponse={fileStreamResponse} setStreamResponse={setFileStreamResponse} clearAllContent={clearAllContent}
+          <FileUpload result={handleFileUploadResult} Olddata={fileSummaries} streamResponse={fileStreamResponse} setStreamResponse={setFileStreamResponse} clearAllContent={clearAllFileContent}
           completeText={completeFile}
           setCompleteText={setCompleteFile}
           setCompleteStream={setCompleteFileStream}
