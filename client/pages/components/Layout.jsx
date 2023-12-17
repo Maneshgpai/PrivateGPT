@@ -13,7 +13,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import { Settings } from '@mui/icons-material';
+import { Settings, LocalHospital } from '@mui/icons-material';
 import Link from 'next/link';
 import NewReleasesRoundedIcon from '@mui/icons-material/NewReleasesRounded';
 import { Tooltip } from '@mui/material';
@@ -107,6 +107,11 @@ export default function Layout(props) {
       name: "Generate codes",
       icon: <HomeRoundedIcon />,
       link: "/",
+    },
+    {
+      name: "My EMR",
+      icon: <LocalHospital />,
+      link: "/myemr",
     },
     {
       name: "Settings",
