@@ -26,7 +26,7 @@ export default function AppHeader({toggleSidebar}) {
   return (
     <div
       id="nav"
-      className="mx-auto px-4 border-gray-100 dark:border-gray-600"
+      className="w-full px-4 border-gray-100 dark:border-gray-600"
     >
       <div className="relative flex h-12 items-center justify-between">
         {/* {
@@ -59,7 +59,7 @@ export default function AppHeader({toggleSidebar}) {
         </div>
           )
         } */}
-        <div className="lg:flex lg:flex-1 lg:justify-end">
+        <div className="flex flex-1 justify-end">
           <SignedIn>
             <UserButton afterSignOutUrl="/" />
           </SignedIn>

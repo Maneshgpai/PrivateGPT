@@ -80,8 +80,9 @@ export default function Chat() {
     const data = []
     jsonData.forEach((item) => {
 
-      let fileName = item.fileName
+      let fileName = item.filename
       delete item.fileName
+      console.log("filename:",fileName)
 
       data.push({
         fileName,  //item.fileName
@@ -107,13 +108,13 @@ export default function Chat() {
       style={{ minHeight: `calc(100vh - ${3}rem)`, backgroundColor: "#ebeef4", color: "#000" }}>
 
       <div className="border-gray-100  shadow-none sticky top-0" style={{ backgroundColor: "#ebeef4", color: "#000" }}>
-        <h1 className="text-center py-3 font-bold text-xl text-gray-600">
-          Generate medical codes in a snap!
+      <h1 className="text-center py-3 font-bold lg:text-xl md:text-lg sm:text-lg text-gray-600">
+                  Generate medical codes in a snap!
         </h1>
       </div>
       <>
         <div className='flex justify-center align-middle'>
-          <Box sx={{ width: 500 }}>
+        <Box sx={{ width: 500, }}>
             <BottomNavigation
               showLabels
               value={value}
@@ -124,6 +125,7 @@ export default function Chat() {
             >
               {/* <Tooltip title="Paste medical content"> */}
               <BottomNavigationAction
+                sm={{width: '5px'}}
                 aria-selected={activeTab === "text"}
                 label="Paste text"
                 icon={<ContentPasteSearchRoundedIcon />}
@@ -135,6 +137,7 @@ export default function Chat() {
 
               {/* <Tooltip title="Upload medical note as PDF"> */}
               <BottomNavigationAction
+                sm={{width: '5px'}}
                 aria-selected={activeTab === "file"}
                 onClick={() => {
                   handleTabChange("file")
@@ -146,9 +149,10 @@ export default function Chat() {
 
               {/* <Tooltip title="Quick Search medical codes"> */}
               <BottomNavigationAction
+                sm={{width: '5px'}}
                 aria-selected={activeTab === "qiksearch"}
                 label="Quick search"
-                icon={<ContentPasteSearchRoundedIcon />}
+                icon={<ContentPasteSearchRoundedIcon sm={{width: '5px'}}/>}
                 disabled
                 onClick={() => {
                   handleTabChange("qiksearch")
@@ -239,14 +243,12 @@ export default function Chat() {
                 )}
 
               </div>
-
+              {/* DOWNLOAD COMPONENT FOR FILE UPLOAD */}
               <div className="mt-4 flex w-full flex-col items-center">
                 <span>
                   {completeFileStream &&
-                    // <Tooltip title="Download codes in a neat excel file!">
                     <Button component="label" variant="contained" disableElevation startIcon={<FileDownloadIcon />}
                       onClick={() => exportStreamToExcel(summary?.summary || fileStreamResponse)}>Download</Button>
-                    // </Tooltip>
                   }
                 </span>
               </div>

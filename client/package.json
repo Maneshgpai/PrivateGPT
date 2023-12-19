@@ -19,19 +19,25 @@
     "@mui/material": "^5.14.19",
     "@mui/styled-engine-sc": "^6.0.0-alpha.7",
     "@mui/system": "^5.14.19",
+    "@mui/x-charts": "^6.18.3",
     "@vercel/analytics": "^1.1.1",
     "autoprefixer": "10.4.14",
+    "chart.js": "^4.1.1",
     "dotenv": "^16.3.1",
     "eslint": "8.44.0",
     "eslint-config-next": "13.4.9",
-    "next": "13.4.9",
-    "postcss": "8.4.25",
+    "postcss": "^8.4.32",
     "react": "18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "18.2.0",
     "react-dropzone": "^14.2.3",
     "react-transition-group": "^4.4.5",
+    "recharts": "^2.10.3",
     "styled-components": "^6.1.1",
     "tailwindcss": "^3.3.3",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
+  },
+  "devDependencies": {
+    "next": "^14.0.4"
   }
 }

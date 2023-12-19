@@ -1,10 +1,15 @@
+.boxmain{
+  width: 100% !important;
+  overflow-y: hidden;
+  padding: none !important;
+  overflow: hidden !important;
+}
 .main {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
     padding: 6rem;
-    min-height: 100vh;
   }
   
   .description {
@@ -13,7 +18,7 @@
     align-items: inherit;
     font-size: 0.85rem;
     max-width: var(--max-width);
-    width: 100%;
+    width: auto;
     z-index: 2;
     font-family: var(--font-mono);
   }

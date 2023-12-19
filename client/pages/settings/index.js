@@ -29,11 +29,11 @@ export default function Home() {
             <div className={`${styles.settingsContainer} `}>
               <h1 className="text-center py-3 font-bold text-xl text-gray-600">Settings</h1>
 
-              <div className="flex flex-row mt-4">
-              <Grid container spacing={4}>
-                <Grid item xs={4}>
+              <div className="">
+              <Grid container >
+                <Grid item sm={4} marginTop={5}>
                   <Item>
-                    <Card sx={{ minWidth: 200}}>
+                    <Card>
                       <CardContent>
                         <Typography variant="h6" component="div" align="left">
                           Usage
@@ -45,9 +45,9 @@ export default function Home() {
                     </Card>
                   </Item>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item sm={4} marginLeft={5} marginTop={5}>
                   <Item>
-                    <Card sx={{ minWidth: 200 }}>
+                    <Card >
                       <CardContent>
                       <Typography variant="h6" component="div" align="left">
                           Billing
@@ -67,11 +67,11 @@ export default function Home() {
               </Grid>
               </div>
 
-              <div className="flex flex-row mt-4">
-              <Grid container spacing={4}>
-                <Grid item xs={4}>
+              {/* <div className="">
+              <Grid container >
+                <Grid item sm={4} marginTop={10}>
                   <Item>
-                    <Card sx={{ minWidth: 200}}>
+                    <Card>
                       <CardContent>
                         <Typography variant="h6" component="div" align="left">
                           Profile
@@ -85,9 +85,9 @@ export default function Home() {
                     </Card>
                   </Item>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item sm={4} marginTop={10} marginLeft={5}>
                     <Item>
-                      <Card sx={{ minWidth: 200 }}>
+                      <Card>
                         <CardContent>
                           <Typography variant="h6" component="div" align="left">
                             Upsell/ Affiliate
@@ -101,7 +101,7 @@ export default function Home() {
                     </Item>
                   </Grid>
                 </Grid>
-              </div>
+              </div> */}
           </div>
 
           </Layout>

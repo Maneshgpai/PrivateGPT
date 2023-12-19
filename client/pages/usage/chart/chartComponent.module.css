@@ -1,0 +1,108 @@
+.chart {
+    color: white;
+    /* margin: auto; */
+    width: 600px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .usageBox{
+    display: block;
+    padding: 20px;
+  }
+
+  .usageBox h1{
+    font-size: 22px;
+  }
+  .usageBox h2{
+    font-size: 16px;
+  }
+  .btnContainer{
+    border: 1px solid #1cdf95;
+    border-radius: 12px;
+    width: 180px;
+  }
+
+  .btnContainer button{
+    width: 80px;
+    
+  }
+ .btnCost{
+    background-color: #1cdf95;
+    border-bottom-left-radius: 12px;
+    border-top-left-radius: 12px;
+    padding: 10px 20px;
+    color: white;
+  }
+  .btnActivity{
+    background-color: transparent;
+    border-bottom-left-radius: 12px;
+    border-top-left-radius: 12px;
+    padding: 10px 20px;
+    color: #333;
+  }
+  .hContainer{
+    display: flex;
+    justify-content: space-between;
+  }
+  @media (max-width: 280px)  {
+    .chart{
+      width: 200px !important;
+      height: 200px !important;
+    }
+    .usageBox{
+      display: block;
+      padding: 0px;
+    }
+    .btnContainer{
+      border: 1px solid #1cdf95;
+      border-radius: 12px;
+      width: 100px;
+    }
+  
+    .btnContainer button{
+      width: 49px;
+      font-size: 10px;
+    }
+    .btnCost{
+      background-color: #1cdf95;
+      border-bottom-left-radius: 12px;
+      border-top-left-radius: 12px;
+      padding: 5px 10px;
+      color: white;
+    }
+  }
+  @media (min-width: 281px) and (max-width: 480px){
+    .chart{
+      width: 290px;
+      height: 240px;
+    }
+    .usageBox{
+      display: block;
+      padding: 0px;
+    }
+    .btnContainer{
+      border: 1px solid #1cdf95;
+      border-radius: 12px;
+      width: 100px;
+    }
+  
+    .btnContainer button{
+      width: 49px;
+      font-size: 10px;
+    }
+    .btnCost{
+      background-color: #1cdf95;
+      border-bottom-left-radius: 12px;
+      border-top-left-radius: 12px;
+      padding: 5px 10px;
+      color: white;
+    }
+  }
+  @media (min-width: 481px) and (max-width: 600px){
+    .chart{
+      width: 380px;
+      height: 280px;
+    }
+  }
