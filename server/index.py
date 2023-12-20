@@ -110,7 +110,7 @@ def upload_files():
                     allFiles.append(
                         {"filename": filename, "text": text}
                     )
-                    logger.info(text)
+                    # logger.info(text)
         
         uid = request.args.get('uid')
 
@@ -118,9 +118,7 @@ def upload_files():
         firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
         db = firestore.Client.from_service_account_info(firestore_key_json)
         now = datetime.datetime.utcnow()
-        # print (int((now.timestamp()*1000000))+random.randint(1000,9999))
         query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
-        
         query_text = text.strip()
         mod_response = openai.Moderation.create(input=str(allFiles), )
         logger.info(mod_response)
@@ -135,20 +133,10 @@ def upload_files():
             llmmodel = os.environ['DEFAULT_LLM_MODEL']
             openai.api_key = os.environ['OPENAI_API_KEY']
             # physicianType = request.args.get('selectedPhysicianType')
-            # selectedCodeset = request.args.get('selectedCodeset')
-            
-            # logger.info(llmmodel)
 
             try:
-                print('text', allFiles)
-                # prompt = openai_funcs.setCodeGenPrompt(text.strip())
-                prompt = openai_funcs.setCodeGenPrompt(str(allFiles))
-                # logger.info(prompt)
-
-                # 'summarise' for Summarising a medical note during a file upload.
-                # 'code_response' for Generating medical codes directly from the text pasted
+                prompt = openai_funcs.setCodeGenPrompt(str(allFiles), 'file_upload')
                 message = openai_funcs.setChatMsg('code_response', prompt)
-                # logger.info(message)
                 prompt_tokens = openai_funcs.num_tokens_from_messages(message)
                 # full_response = ""
                 def generate():
@@ -156,14 +144,9 @@ def upload_files():
                     for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
                         if "content" in resp.choices[0].delta:
                             text = resp.choices[0].delta.content
-                            # print(text, end='', flush=True)  # Print the live data as it comes in
                             final_text =text.replace('\n', '\\n')
                             full_response += final_text
                             yield f"{final_text}"
-                            # time.sleep(1)  # Simulating a delay
-                    # db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                    # .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                    #     ,"source":"upload_file","field1":"response","field2":filename,"field3":full_response.strip()})
                     
                     db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -174,7 +157,6 @@ def upload_files():
                         .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                             ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
 
-                # response = openai_funcs.getResponse(False, llmmodel, message)
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 
             except AuthenticationError:
@@ -329,8 +311,8 @@ def summarise_text():
             # db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
             #     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
             #           ,"source":"paste_content","field1":"query","field2":text.strip()})
-
-            prompt = openai_funcs.setCodeGenPrompt(text.strip())
+            
+            prompt = openai_funcs.setCodeGenPrompt(text.strip(), 'paste_text')
 
             # 'summarise' for Summarising a medical note during a file upload.
             # 'code_response' for Generating medical codes directly from the text pasted
@@ -349,11 +331,6 @@ def summarise_text():
                             full_response += final_text
                             yield f"{final_text}"
                             # time.sleep(1)  # Simulating a delay
-                    
-                    # db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                    #                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                    #                     ,"source":"paste_content","field1":"response","field2":full_response.strip()})
-
                     db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                         .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                             ,"source":"paste_content","query_id":query_id,"query":query_text,"response":full_response.strip()})
@@ -362,7 +339,6 @@ def summarise_text():
                     db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                         .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                             ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
-
 
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 
@@ -465,6 +441,6 @@ def summarise_text():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
-    # app.run(debug=True, port=8080) ### For Local host
+    # app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
+    app.run(debug=True, port=8080) ### For Local host
     # app.run(port=8080) ### For Local host

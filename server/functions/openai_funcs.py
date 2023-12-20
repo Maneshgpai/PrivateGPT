@@ -78,9 +78,23 @@ def setChatMsg(msg_typ,prompt):
     )
     return jsonify({"message": error}), 400
 
-def setCodeGenPrompt(note):
+def setCodeGenPrompt(note, search_type):
   try:
-    prompt = f"""{os.environ['OPENAI_CODEGEN_PROMPT1']}{note}{os.environ['OPENAI_CODEGEN_PROMPT2']}"""
+    if search_type == 'file_upload':
+      prompt = f"""{os.environ['OPENAI_CODEGEN_PROMPT_START']}\
+        {os.environ['OPENAI_CODEGEN_PROMPT1_UPLOAD_JSON1']}\
+        {os.environ['OPENAI_CODEGEN_PROMPT2']}\
+        {os.environ['OPENAI_CODEGEN_PROMPT3_UPLOAD_JSON2']}\
+        {os.environ['OPENAI_CODEGEN_PROMPT4']}\
+        {note}\
+        {os.environ['OPENAI_CODEGEN_PROMPT_END']}"""
+    else:
+      # prompt = f"""{os.environ['OPENAI_CODEGEN_PROMPT1']}{note}{os.environ['OPENAI_CODEGEN_PROMPT2']}"""
+      prompt = f"""{os.environ['OPENAI_CODEGEN_PROMPT_START']}\
+        {os.environ['OPENAI_CODEGEN_PROMPT2']}\
+        {os.environ['OPENAI_CODEGEN_PROMPT4']}\
+        {note}\
+        {os.environ['OPENAI_CODEGEN_PROMPT_END']}"""
     return prompt
   except Exception as e:
     error = "Error: {}".format(str(e))

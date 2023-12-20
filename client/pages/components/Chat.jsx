@@ -82,10 +82,10 @@ export default function Chat() {
 
       let fileName = item.filename
       delete item.fileName
-      console.log("filename:",fileName)
+      // console.log("filename:",fileName)
 
       data.push({
-        fileName,  //item.fileName
+        // fileName,  //item.fileName
         ...item,
       })
     })
