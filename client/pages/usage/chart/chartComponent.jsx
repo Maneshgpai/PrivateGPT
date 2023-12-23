@@ -4,8 +4,8 @@ import Chart from 'chart.js/auto';
 import styles from './chartComponent.module.css'
 import { CategoryScale } from 'react-chartjs-2';
 const ChartComponent = ({ data }) => {
-  const labels = data.map(item => item.label);
-  const values = data.map(item => item.value);
+  const labels = data?.map(item => item.label);
+  const values = data?.map(item => item.value);
 
   const chartData = {
     labels,

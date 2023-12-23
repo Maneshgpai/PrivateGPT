@@ -76,7 +76,7 @@ export default function Chat() {
 
   const exportStreamToExcel = (streamData) => {
     const jsonData = JSON.parse(streamData.replace(/\\n/g, "").replace(/\\/g, ""));
-    console.log(jsonData)
+    // console.log(jsonData)
     const data = []
     jsonData.forEach((item) => {
 
