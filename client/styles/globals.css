@@ -6,5 +6,10 @@
     background-color: #ebeef4 !important;
     color: #000;
 }
-
+.boxmain{
+    width: 100% !important;
+    overflow-y: hidden;
+    padding: none !important;
+    overflow: hidden !important;
+}
 

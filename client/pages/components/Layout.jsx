@@ -9,11 +9,12 @@ import MuiAppBar from '@mui/material/AppBar';
 import List from '@mui/material/List';
 import CssBaseline from '@mui/material/CssBaseline';
 import Divider from '@mui/material/Divider';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import { Settings } from '@mui/icons-material';
+import { Settings, LocalHospital } from '@mui/icons-material';
 import Link from 'next/link';
 import NewReleasesRoundedIcon from '@mui/icons-material/NewReleasesRounded';
 import { Tooltip } from '@mui/material';
@@ -109,10 +110,21 @@ export default function Layout(props) {
       link: "/",
     },
     {
+      name: "My EMR",
+      icon: <LocalHospital />,
+      link: "/myemr",
+    },
+    {
+      name: "Usage",
+      icon: <LeaderboardIcon />,
+      link: '/usage'
+    },
+    {
       name: "Settings",
       icon: <Settings />,
       link: "/settings",
-    },
+    }
+    
 
   ]
 
@@ -120,7 +132,7 @@ export default function Layout(props) {
     <div>
 
       <Header toggleSidebar={toggleSidebar} />
-      <Box sx={{ display: 'flex', minWidth: 300 }}  >
+      <Box sx={{ display: 'flex', boxSizing: 'boder-box', overflow: 'hidden' }}  >
         <CssBaseline />
         {/* TOP APP BAR  */}
         {/* <AppBar position="fixed" open={open} style={{ backgroundColor: "#ebeef4", color: "#000" }}>
@@ -154,7 +166,7 @@ export default function Layout(props) {
                   rel="noreferrer">
                   <Tooltip title={item?.name} placement="right" >
                     <ListItemButton
-                      sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5, }} >
+                      sx={{ minHeight: 38, justifyContent: open ? 'initial' : 'center', px: 2.5, }} >
                       <ListItemIcon
                         sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center', }}>
                         {item?.icon}
@@ -170,9 +182,8 @@ export default function Layout(props) {
           {/* <Divider /> */}
         </Drawer>
 
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}
-        >
-          <div className="flex flex-grow flex-col md:flex-row w-full overflow-y-auto" >
+        <Box className="boxmain">
+          <div className="flex flex-col md:flex-row overflow-y-hidden" >
             {props.children}
           </div>
         </Box>

@@ -214,7 +214,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
                     setStreamResponse("")
                     setCompleteText(false)
                     setCompleteStream("")
-                    handleDeleteFile()
+                    setFiles([])
                   }}
                   className="bg-white inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4 mt-2"
                 ><ClearRoundedIcon /></Button>
@@ -237,10 +237,10 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
 
   function getFileUploadComponent() {
     return (
-      <div className="flex flex-row gap-4">
+      <div className="flex flex-row lg:gap-4 sm:gap-2">
       <Button component="label" variant="contained" disableElevation 
         onChange={(e) => handleOnChange(e)}
-        sx={{ textTransform: 'capitalize', fontSize: 13, mx: 5 }}><DevicesOutlinedIcon sx={{mr:1, size:"small" }}/>Browse file from computer<VisuallyHiddenInput type="file" multiple accept="application/pdf" />
+        sx={{ textTransform: 'capitalize', fontSize: 12, mx: 1 }}><DevicesOutlinedIcon sx={{mr:1, size:"small" }}/>Browse file from computer<VisuallyHiddenInput type="file" multiple accept="application/pdf" />
       </Button>
       <Button component="label" variant="contained" disableElevation 
         onChange={(e) => handleOnChange(e)} disabled
