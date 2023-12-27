@@ -11,6 +11,7 @@ import traceback
 # import sentry_sdk
 # from sentry_sdk import capture_exception, capture_message
 import logging
+from dotenv import load_dotenv, find_dotenv
 import PyPDF2
 # from sentry_sdk.integrations.logging import LoggingIntegration
 # from sentry_sdk.integrations.flask import FlaskIntegration
@@ -23,6 +24,7 @@ import random
 import math
 import stripe
 
+load_dotenv(find_dotenv())
 
 openai.api_key = os.environ['OPENAI_API_KEY']
 firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
@@ -76,7 +78,7 @@ def createSub():
                     tot_units += data["total_tokens"]
             return tot_units
         tot_units = get_cost_units(user_id)
-        print(f"Total units consumed {tot_units}, by userid {user_id}")
+        # print(f"Total units consumed {tot_units}, by userid {user_id}")
 
         # METERED USAGE RECORDING GOES HERE        
         # https://stripe.com/docs/billing/subscriptions/usage-based/recording-usage
@@ -99,9 +101,9 @@ def createSub():
             cancel_url="http://localhost:3000" + "?canceled=true",
         )
     except Exception as error:
-        print(error)
+        # print(error)
         return jsonify(error=str(error)), 500
-    print(session.url)
+    # print(session.url)
     return jsonify({"checkout_url": session.url})  # redirect(session.url, code=303)
 ####################################### END STRIPE ##############################################
 
@@ -281,6 +283,7 @@ def upload_files():
 @app.route("/api/summarise-text", methods=["POST"])
 def summarise_text():
     try:
+        uid = request.args.get('uid')            
         firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
         firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
         db = firestore.Client.from_service_account_info(firestore_key_json)
@@ -304,7 +307,6 @@ def summarise_text():
             llmmodel = os.environ['DEFAULT_LLM_MODEL']
             openai.api_key = os.environ['OPENAI_API_KEY']
             # physicianType = request.args.get('selectedPhysicianType')
-            uid = request.args.get('uid')            
             prompt = openai_funcs.setCodeGenPrompt(text.strip(), 'paste_text')
 
             # 'summarise' for Summarising a medical note during a file upload.
@@ -417,11 +419,11 @@ def summarise_text():
                 return jsonify({"message": error}), 400
 
             # summary1 = summary.replace('\n', '\\n')
-            return jsonify([{"summary": "summary"}]), 200
+            # return jsonify([{"summary": "summary"}]), 200
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
-        print(traceback.format_exc())   
+        # print(traceback.format_exc())   
 
         db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
             .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -429,7 +431,87 @@ def summarise_text():
         return jsonify({"message": error}), 400
 
 
+@app.route("/api/browser-extn", methods=["POST"])
+def browser_extn_search():
+    try:
+        # print("Entered browser-extn *************")
+        uid = request.args.get('uid')
+        if (uid == 'user_textUserBrowserExtn'):
+            firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+            firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+            db = firestore.Client.from_service_account_info(firestore_key_json)
+            now = datetime.datetime.utcnow()
+            query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
+
+            data = request.get_json()
+            if 'text' not in data:
+                return jsonify({'error': 'Text not found in request'}), 400
+            text = data['text']
+            query_text = text.strip()
+            mod_response = openai.Moderation.create(input=text, )
+            if (mod_response['results'][0]['flagged']):
+                error = 'This text violates website\'s content policy! Please use content relevant to medical coding only.'
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                        ,"source":"browser_extn","query_id":query_id,"query":query_text,"error":error})
+                return jsonify({"message": error}), 401
+            else:
+                llmmodel = os.environ['DEFAULT_LLM_MODEL']
+                openai.api_key = os.environ['OPENAI_API_KEY']
+
+                prompt = openai_funcs.setCodeGenPrompt(text.strip(), 'browser_extn')
+                message = openai_funcs.setChatMsg('browser_extn', prompt)
+                prompt_tokens = openai_funcs.num_tokens_from_messages(message)
+
+                try:
+                    response = openai_funcs.getResponse(False, llmmodel, message)
+                except AuthenticationError:
+                    error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
+                    logger.error(error)
+                    return jsonify({"message": error}), 401
+                except APIError:
+                    error = 'Retry your request after a brief wait and contact us if the issue persists.'
+                    logger.error(error)
+                    return jsonify({"message": error}), 401
+                except RateLimitError:
+                    error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
+                    logger.error(error)
+                    return jsonify({"message": error}), 401
+                except APIConnectionError:
+                    error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
+                    logger.error(error)
+                    return jsonify({"message": error}), 401
+                except ServiceUnavailableError:
+                    error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
+                    logger.error(error)
+                    return jsonify({"message": error}), 401
+                except:
+                    error = "Error: {}".format(traceback.format_exc())
+                    logger.error(error)
+                    return jsonify({"message": error}), 400
+
+                resp = response['choices'][0]['message']['content']
+                completion_tokens = openai_funcs.num_tokens_from_response(resp)
+
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                        ,"source":"paste_content","query_id":query_id,"query":query_text,"response":resp.strip()})
+
+                completion_tokens = openai_funcs.num_tokens_from_response(resp.strip())
+                db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                        ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
+
+                return jsonify({"summary": resp}), 200
+        else:
+            return jsonify({"message": "User not valid"}), 401
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
-    # app.run(debug=True, port=8080) ### For Local host
+    # app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
+    app.run(debug=True, port=8080) ### For Local host
     # app.run(port=8080) ### For Local host

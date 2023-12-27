@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.summarize import load_summarize_chain
 from langchain.document_loaders import PyPDFLoader
@@ -13,8 +13,7 @@ from sentry_sdk import capture_exception, capture_message
 import traceback
 from flask import jsonify
 
-
-load_dotenv()
+load_dotenv(find_dotenv())
 
 
 def summarize_pdf(pdf_file_path, options):
@@ -63,6 +62,8 @@ def setChatMsg(msg_typ,prompt):
   try:
     if msg_typ == 'summarise':
       messages = [{"role": "system", "content": os.environ['OPENAI_MESSAGE_SUMMARISE']},{"role": "user", "content": prompt}]
+    elif msg_typ == 'browser_extn':
+      messages = [{"role": "system", "content": os.environ['OPENAI_BROWSER_EXTN_MESSAGE']},{"role": "user", "content": prompt}]
     else:
       messages = [{"role": "system", "content": os.environ['OPENAI_MESSAGE_CODEGEN']},{"role": "user", "content": prompt}]
     return messages
@@ -88,13 +89,17 @@ def setCodeGenPrompt(note, search_type):
         {os.environ['OPENAI_CODEGEN_PROMPT4']}\
         {note}\
         {os.environ['OPENAI_CODEGEN_PROMPT_END']}"""
+    elif search_type == 'browser_extn':
+      prompt = f"""{os.environ['OPENAI_BROWSER_EXTN_PROMPT1']}\
+        {note}\
+        {os.environ['OPENAI_BROWSER_EXTN_PROMPT2']}"""
     else:
-      # prompt = f"""{os.environ['OPENAI_CODEGEN_PROMPT1']}{note}{os.environ['OPENAI_CODEGEN_PROMPT2']}"""
       prompt = f"""{os.environ['OPENAI_CODEGEN_PROMPT_START']}\
         {os.environ['OPENAI_CODEGEN_PROMPT2']}\
         {os.environ['OPENAI_CODEGEN_PROMPT4']}\
         {note}\
         {os.environ['OPENAI_CODEGEN_PROMPT_END']}"""
+        
     return prompt
   except Exception as e:
     error = "Error: {}".format(str(e))
