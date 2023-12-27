@@ -48,7 +48,7 @@ function App() {
         // ... add any required formData if needed
 
         try {
-            const response = await fetch(`${apiUrl}/api/handler?uid=${userId}`, {
+            const response = await fetch(`${apiUrl}/api/create-sub?uid=${userId}`, {
                 mode: "cors",
                 method: "POST",
                 body: formData,
