@@ -193,10 +193,6 @@ export default function Chat() {
             setCompleteText={setCompleteText}
             setCompleteStream={setCompleteStream}
             completeStream={completeStream} //textCompleteStream}//////////
-            {...console.log('TextSnippet >> setTextSummaries:', setTextSummaries)}
-            {...console.log('TextSnippet >> Olddata:', textSummaries)}
-            {...console.log('TextSnippet >> streamResponse:', streamResponse)}
-            {...console.log('TextSnippet >> setStreamResponse:', setStreamResponse)}
           />
         )}
 

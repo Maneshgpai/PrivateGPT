@@ -15,7 +15,7 @@ export default function Hero() {
       </div>
       <div className="mx-auto max-w-2xl py-8 sm:py-12 lg:py-14">
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-blue-900 sm:text-4xl">
             MedCoder
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-600">

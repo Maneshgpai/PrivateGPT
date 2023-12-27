@@ -11,3 +11,4 @@ sentry-sdk==1.32.0
 PyPDF2
 google-cloud-firestore==2.13.1
 pytz
+stripe

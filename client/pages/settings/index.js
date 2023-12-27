@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import App from "./bill/checkout.jsx"
 
 export default function Home() {
   const Item = styled(Paper)(({ theme }) => ({
@@ -20,6 +21,9 @@ export default function Home() {
     textAlign: 'center',
     color: theme.palette.text.secondary,
   }));
+  const CenteredSection = styled('section')({
+    margin: 'auto',
+  });
 
   return (
     <>
@@ -28,7 +32,9 @@ export default function Home() {
           <Layout>
             <div className={`${styles.settingsContainer} `}>
               <h1 className="text-center py-3 font-bold text-xl text-gray-600">Settings</h1>
-
+              <CenteredSection>
+                <App /> {/* Include the PreviewPage component */}
+              </CenteredSection>
               <div className="">
               <Grid container >
                 <Grid item sm={4} marginTop={5}>
