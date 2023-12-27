@@ -9,10 +9,6 @@ const Layout = ({ children, title = 'PrivateGPT' }) => {
         <title>{title}</title>
         <meta charSet='utf-8' />
         <meta name='viewport' content='initial-scale=1.0, width=device-width' />
-        <script type="text/javascript">
-        window.AppcuesSettings = { enableURLDetection };
-        </script>
-        <script src="//fast.appcues.com/205682.js"></script>
       </Head>
       <main>{children}</main>
       <body><Analytics /></body>

@@ -19,7 +19,7 @@ const Message = ({ message }) => (
 function App() {
     const [message, setMessage] = useState("");
     const { user } = useUser();
-    const userId = user.id;
+    const userId = user?.id;
 
     useEffect(() => {
         // Check to see if this is a redirect back from Checkout
