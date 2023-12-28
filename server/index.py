@@ -434,7 +434,7 @@ def summarise_text():
 @app.route("/api/browser-extn", methods=["POST"])
 def browser_extn_search():
     try:
-        # print("Entered browser-extn *************")
+        print("Entered browser-extn *************")
         uid = request.args.get('uid')
         if (uid == 'user_textUserBrowserExtn'):
             firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
