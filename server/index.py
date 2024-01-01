@@ -194,12 +194,12 @@ def upload_files():
                 error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
 
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -207,12 +207,12 @@ def upload_files():
             except APIError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -221,12 +221,12 @@ def upload_files():
             except RateLimitError:
                 error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -234,12 +234,12 @@ def upload_files():
             except APIConnectionError:
                 error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -247,12 +247,12 @@ def upload_files():
             except ServiceUnavailableError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -260,12 +260,12 @@ def upload_files():
             except:
                 error = "Error: {}".format(traceback.format_exc())
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -337,12 +337,12 @@ def summarise_text():
             except AuthenticationError:
                 error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
@@ -350,12 +350,12 @@ def summarise_text():
             except APIError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -364,12 +364,12 @@ def summarise_text():
             except RateLimitError:
                 error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -378,12 +378,12 @@ def summarise_text():
             except APIConnectionError:
                 error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -392,12 +392,12 @@ def summarise_text():
             except ServiceUnavailableError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -406,12 +406,12 @@ def summarise_text():
             except:
                 error = "Error: {}".format(traceback.format_exc())
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -510,8 +510,53 @@ def browser_extn_search():
         logger.error(error)
         return jsonify({"message": error}), 400
 
+@app.route("/user-created", methods=["POST"])
+def user_created():
+    try:
+        # Extract user data from the request
+        data = request.get_json()
+
+        # Create a Stripe customer
+        stripe_customer = stripe.Customer.create(
+            email=data['data']['email_addresses'][0]['email_address'],
+            name=f"{data['data']['first_name']} {data['data']['last_name']}"
+        )
+
+        # Create a Stripe subscription
+        # stripe_subscription = stripe.Subscription.create(
+        #     customer=stripe_customer.id,
+        #     items=[{'price': 'your_stripe_price_id_here'}]
+        # )
+
+        # Prepare user data for Firestore
+        user_data = {
+            'stripe_customer_id': stripe_customer.id,
+            # 'stripe_subscription_id': stripe_subscription.id,
+            # Include other user data you want to store
+            'user_id': data['data']['id'],
+            'first_name': data['data']['first_name'],
+            'last_name': data['data']['last_name'],
+            'email': data['data']['email_addresses'][0]['email_address'],
+            'created_at': firestore.SERVER_TIMESTAMP,
+            'status': 'signup'
+
+        }
+
+        # Save to Firestore
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        db.collection('users').document(data['data']['id']).set(user_data)
+
+        return jsonify({"message": "User created and Stripe subscription set"}), 200
+    
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
-    # app.run(debug=True, port=8080) ### For Local host
+    # app.run(debug=True, host='0.0.0.0', port=8000) ### For Local host
     # app.run(port=8080) ### For Local host
