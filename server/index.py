@@ -523,15 +523,15 @@ def user_created():
         )
 
         # Create a Stripe subscription
-        # stripe_subscription = stripe.Subscription.create(
-        #     customer=stripe_customer.id,
-        #     items=[{'price': 'your_stripe_price_id_here'}]
-        # )
+        stripe_subscription = stripe.Subscription.create(
+            customer=stripe_customer.id,
+            items=[{'price': 'price_1OQ4ZYSGzDVqCKx1RX63pMag'}]
+        )
 
         # Prepare user data for Firestore
         user_data = {
             'stripe_customer_id': stripe_customer.id,
-            # 'stripe_subscription_id': stripe_subscription.id,
+            'stripe_subscription_id': stripe_subscription.id,
             # Include other user data you want to store
             'user_id': data['data']['id'],
             'first_name': data['data']['first_name'],
@@ -549,6 +549,67 @@ def user_created():
         db.collection('users').document(data['data']['id']).set(user_data)
 
         return jsonify({"message": "User created and Stripe subscription set"}), 200
+    
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+    
+
+@app.route("/api/check-user-status", methods=["POST"])
+def check_user_status():
+    try:
+        data = request.get_json()
+        user_id = data['id']
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(user_id)
+        user_data = user_ref.get().to_dict()
+        if user_data:
+            return jsonify({"status": user_data['status']})
+
+        return jsonify({"status": "not_found"}), 404
+    
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+
+
+@app.route("/api/update-user-status", methods=["POST"])
+def update_user_status():
+    try:
+        data = request.get_json()
+        user_id = data['id']
+        status = data['status']
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(user_id)
+        user_ref.update({'status': status})
+        return jsonify({"message": "User status updated successfully"})
+    
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+
+
+@app.route("/api/get-user-data", methods=["POST"])
+def get_user_data():
+    try:
+        data = request.get_json()
+        user_id = data['id']
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(user_id)
+        user_data = user_ref.get().to_dict()
+        if user_data:
+            return jsonify(user_data)
+
+        return jsonify({"message": "User not found"}), 404
     
     except Exception as e:
         error = "Error: {}".format(str(e))
