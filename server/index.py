@@ -139,8 +139,19 @@ def upload_files():
                     # logger.info(text)
         
         uid = request.args.get('uid')
+        userId = uid
 
+
+
+        
         db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(userId)
+        user_data = user_ref.get().to_dict()
+
+        if user_data['status'] != 'payment_method_added':
+            return jsonify({'error': 'Please add payment method', "message" : "Payment Issue" , "status": 400}), 200
+
+
         now = datetime.datetime.utcnow()
         query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
         query_text = text.strip()
@@ -177,6 +188,18 @@ def upload_files():
                         ,"source":"upload_file","query_id":query_id,"query":query_text,"response":full_response.strip(),"upload_file":filename})
 
                     completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
+                    if user_data['stripe_subscription_id']:
+                        subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
+                        total_tokens = prompt_tokens + completion_tokens
+                        print("all tokens", total_tokens, subscription_item_id)
+
+                        stripe.SubscriptionItem.create_usage_record(
+                            subscription_item_id,  # Use the retrieved subscription item ID
+                            quantity=total_tokens,
+                            api_key=stripe_secret_key,
+                            action='increment',
+                        )
+
 
 ############################# STRIPE Start ###################################
                     # stripe.SubscriptionItem.create_usage_record(
@@ -289,12 +312,21 @@ def summarise_text():
         db = firestore.Client.from_service_account_info(firestore_key_json)
         now = datetime.datetime.utcnow()
         query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
+        
 
         data = request.get_json()
         if 'text' not in data:
             return jsonify({'error': 'Text not found in request'}), 400
         
         text = data['text']
+        userId = data['userId']
+
+        user_ref = db.collection('users').document(userId)
+        user_data = user_ref.get().to_dict()
+
+        if user_data['status'] != 'payment_method_added':
+            return jsonify({'error': 'Please add payment method', "message" : "Payment Issue" , "status": 400}), 200
+
         query_text = text.strip()
         mod_response = openai.Moderation.create(input=text, )
         if (mod_response['results'][0]['flagged']):
@@ -329,9 +361,22 @@ def summarise_text():
                             ,"source":"paste_content","query_id":query_id,"query":query_text,"response":full_response.strip()})
 
                     completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
+
                     db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                         .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                             ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
+                    if user_data['stripe_subscription_id']:
+                        subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
+                        total_tokens = prompt_tokens + completion_tokens
+                        print("all tokens", total_tokens, subscription_item_id)
+
+                        stripe.SubscriptionItem.create_usage_record(
+                            subscription_item_id,  # Use the retrieved subscription item ID
+                            quantity=total_tokens,
+                            api_key=stripe_secret_key,
+                            action='increment',
+                        )
+
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 
             except AuthenticationError:
@@ -528,10 +573,13 @@ def user_created():
             items=[{'price': 'price_1OQ4ZYSGzDVqCKx1RX63pMag'}]
         )
 
+        print("stripe_sub", stripe_subscription)
+
         # Prepare user data for Firestore
         user_data = {
             'stripe_customer_id': stripe_customer.id,
             'stripe_subscription_id': stripe_subscription.id,
+            'stripe_subscription_item_id': stripe_subscription['items']['data'][0]['id'],
             # Include other user data you want to store
             'user_id': data['data']['id'],
             'first_name': data['data']['first_name'],
@@ -616,6 +664,42 @@ def get_user_data():
         logger.error(error)
         return jsonify({"message": error}), 400
 
+
+
+@app.route('/api/add-payment-method', methods=['POST'])
+def add_payment_method():
+    try:
+        data = request.json
+        customer_id = data.get('customer_id')  # Replace with actual customer ID
+        payment_method_id = data.get('payment_method_id')
+        user_id = data.get('id')
+        # Attach the payment method to the customer
+        stripe.PaymentMethod.attach(
+            payment_method_id,
+            customer=customer_id
+        )
+
+        # Set the default payment method
+        stripe.Customer.modify(
+            customer_id,
+            invoice_settings={
+                'default_payment_method': payment_method_id
+            }
+        )
+        status = 'payment_method_added'
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(user_id)
+        user_ref.update({'status': status})
+
+
+
+        return jsonify({'message': 'Payment method added successfully'}), 200
+
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True) ### For Render

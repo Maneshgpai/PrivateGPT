@@ -14,6 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddToDriveOutlinedIcon from '@mui/icons-material/AddToDriveOutlined';
 import DevicesOutlinedIcon from '@mui/icons-material/DevicesOutlined';
 import Box from '@mui/material/Box';
+import axios from "axios";
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -28,12 +29,29 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 
-function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearAllContent, completeText, setCompleteText, setCompleteStream, completeStream }) {
+function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearAllContent, completeText, setCompleteText, setCompleteStream, completeStream, setOpen }) {
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
   const { user } = useUser();
 
+const checkUserStatus =async ()=>{
+    console.log("userStatus", user.id)
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
+      if (response.data.status !== 'payment_method_added') {
+        setOpen(true);
+        return false
+      } else {
+        setOpen(false);
+        return true
+      }
+
+    }
+    catch (e) {
+      console.log(e)
+    }
+  }
   const handleSubmit = async (e) => {
     setError(false);
     event.preventDefault();
@@ -44,7 +62,12 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
     setCompleteText(false)
     setCompleteStream(false)
     setStreamResponse("")
-
+    const userStatus = await checkUserStatus()
+    console.log("userStatus", userStatus)
+    if (!userStatus){
+      setIsLoading(false);
+      return 
+    }
     const formData = new FormData();
     files.forEach((file) => {
       formData.append("files", file);

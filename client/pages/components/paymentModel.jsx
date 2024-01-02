@@ -5,7 +5,6 @@ import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-const stripePromise = loadStripe('pk_test_51OOr9eSIBy1LWCne9SUX35MhWIZ64m2jFPi0hV66xYOZvY2YuVW8bbcdXtK0eqVNNJ95zCYTRwnJnMK6nrQfImzH00Q2KA2DId');
 
 // Modal component with Tailwind CSS
 const Modal = ({isOpen, setOpen, userData}) => {
@@ -35,11 +34,13 @@ const Modal = ({isOpen, setOpen, userData}) => {
     } else {
       console.log('[PaymentMethod]', paymentMethod);
       // Send the paymentMethod.id to your backend (e.g., via `axios.post`)
-      axios.post(`${process.env.NEXT_PUBLIC_API_URL}/add-payment-method`, {
+      axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/add-payment-method`, {
         payment_method_id: paymentMethod.id,
-        customer_id: userData?.stripe_customer_id // Use the customer ID from userData
+        customer_id: userData?.stripe_customer_id, // Use the customer ID from userData
+        id: user.id,
       }).then(response => {
         console.log('Payment method saved', response);
+        setOpen(false);
         // Handle response
       }).catch(error => {
         console.error('Error saving payment method', error);
@@ -73,9 +74,9 @@ const handleAddCard = () => {
       <div className="bg-white p-6 rounded-lg shadow-lg text-center">
         <h2 className="text-black text-2xl mb-20">Do you want to add a payment method?</h2>
         <div>
-  <button className="bg-black text-white py-2 px-4 rounded hover:bg-gray-700 mr-2 mb-10" onClick={handleAddCard}>
+  {!showCardElement && <button className="bg-black text-white py-2 px-4 rounded hover:bg-gray-700 mr-2 mb-10" onClick={handleAddCard}>
     <CheckIcon/> <span>Yes</span> 
-  </button>
+  </button>}
   <form onSubmit={handleSubmit}>
       {/* <button onClick={() => setShowCardElement(true)}>Add Card</button> */}
       {showCardElement && <>

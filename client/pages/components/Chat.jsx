@@ -30,7 +30,7 @@ import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-const stripePromise = loadStripe('pk_test_51OOr9eSIBy1LWCne9SUX35MhWIZ64m2jFPi0hV66xYOZvY2YuVW8bbcdXtK0eqVNNJ95zCYTRwnJnMK6nrQfImzH00Q2KA2DId');
+const stripePromise = loadStripe('pk_test_51ONGj9SGzDVqCKx1mc6lPSykMVRvItL9wvMvllR78JwP4xGTKmCbWTy5wzKfWBMPJqY6SgWReca1yqC1JhR0HeUD00j0mbKxbF');
 
 
 export default function Chat() {
@@ -218,7 +218,9 @@ export default function Chat() {
             completeText={completeFile}
             setCompleteText={setCompleteFile}
             setCompleteStream={setCompleteFileStream}
-            completeStream={completeFileStream} />
+            completeStream={completeFileStream}
+            setOpen={setOpen}
+            />
         )}
 
         {activeTab === "text" && (
@@ -232,6 +234,7 @@ export default function Chat() {
             setCompleteText={setCompleteText}
             setCompleteStream={setCompleteStream}
             completeStream={completeStream} //textCompleteStream}//////////
+            setOpen={setOpen}
           />
         )}
 
