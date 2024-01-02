@@ -9,12 +9,32 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded';
 import ReplayIcon from '@mui/icons-material/Replay';
+import axios from "axios";
 
-function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clearAllContent, completeText, setCompleteText, setCompleteStream, completeStream }) {
+function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clearAllContent, completeText, setCompleteText, setCompleteStream, completeStream, setOpen }) {
   const [text, setText] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { user } = useUser();
+
+
+  const checkUserStatus =async ()=>{
+    console.log("userStatus", user.id)
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
+      if (response.data.status !== 'payment_method_added') {
+        setOpen(true);
+        return false
+      } else {
+        setOpen(false);
+        return true
+      }
+
+    }
+    catch (e) {
+      console.log(e)
+    }
+  }
 
   const handleSubmit = async (e) => {
     setError(false);
@@ -23,6 +43,13 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
       return null;
     }
     setIsLoading(true);
+    
+    const userStatus = await checkUserStatus()
+    console.log("userStatus", userStatus)
+    if (!userStatus){
+      setIsLoading(false);
+      return 
+    }
     setCompleteText(false)
     setCompleteStream(false)
 
@@ -36,16 +63,19 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
       const queryParams = new URLSearchParams();
       queryParams.append("uid", user.id);
 
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL
         }/api/summarise-text?${queryParams.toString()}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ text: text })
+        body: JSON.stringify({ text: text, userId : user?.id })
       });
+    
 
       if (response.status === 200) {
+        // if (response)
         const reader = response.body.getReader();
         setStreamResponse("")
         const processStream = async () => {
@@ -76,8 +106,13 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
         });
 
       }
+      
     } catch (e) {
       setIsLoading(false);
+      if (e.message === "Payment Issue"){
+        setOpen(true)
+
+      }
       setError(e.message);
     }
   };

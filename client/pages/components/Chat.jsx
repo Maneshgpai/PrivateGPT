@@ -25,6 +25,13 @@ import Button from '@mui/material/Button';
 import SkeletonTable from './SkeletonTable';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import Modal from './paymentModel';
+import { useUser } from '@clerk/nextjs';
+import axios from 'axios';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+const stripePromise = loadStripe('pk_test_51ONGj9SGzDVqCKx1mc6lPSykMVRvItL9wvMvllR78JwP4xGTKmCbWTy5wzKfWBMPJqY6SgWReca1yqC1JhR0HeUD00j0mbKxbF');
+
 
 export default function Chat() {
   const [fileSummaries, setFileSummaries] = useState([]);
@@ -41,10 +48,38 @@ export default function Chat() {
   const [isOpen, setIsOpen] = useState(true);
   const [pdfView, setPdfView] = useState(false)
   const [value, setValue] = React.useState(0);
+  const [open, setOpen] = React.useState(false);
+  const { isLoaded, isSignedIn, user } = useUser();
+  const [userData, setUserData] = useState();
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
+
+  const checkUserStatus =async ()=>{
+    console.log("userStatus", user.id)
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
+      if (response.data.status === 'signup') {
+        setOpen(true);
+      } else {
+        setOpen(false);
+      }
+
+      const userResponse = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/get-user-data`,{ id: user.id } )
+      if (userResponse.status === 200){
+        setUserData(userResponse?.data)
+      }
+      else{
+        setUserData(null)
+      }
+    } catch (error) {
+      console.error(error);
+    }  }
+
+  useEffect(()=>{
+    checkUserStatus()
+  }, [])
 
   const handleFileUploadResult = (result) => {
     if (result) {
@@ -106,6 +141,10 @@ export default function Chat() {
   return (
     <div className="container mx-auto  flex flex-col"
       style={{ minHeight: `calc(100vh - ${3}rem)`, backgroundColor: "#ebeef4", color: "#000" }}>
+        <Elements stripe={stripePromise}>
+
+        <Modal isOpen={open} setOpen={setOpen} userData={userData} />
+        </Elements>
 
       <div className="border-gray-100  shadow-none sticky top-0" style={{ backgroundColor: "#ebeef4", color: "#000" }}>
       <h1 className="text-center py-3 font-bold lg:text-xl md:text-lg sm:text-lg text-gray-600">
@@ -179,7 +218,9 @@ export default function Chat() {
             completeText={completeFile}
             setCompleteText={setCompleteFile}
             setCompleteStream={setCompleteFileStream}
-            completeStream={completeFileStream} />
+            completeStream={completeFileStream}
+            setOpen={setOpen}
+            />
         )}
 
         {activeTab === "text" && (
@@ -193,6 +234,7 @@ export default function Chat() {
             setCompleteText={setCompleteText}
             setCompleteStream={setCompleteStream}
             completeStream={completeStream} //textCompleteStream}//////////
+            setOpen={setOpen}
           />
         )}
 

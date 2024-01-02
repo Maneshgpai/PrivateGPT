@@ -139,8 +139,19 @@ def upload_files():
                     # logger.info(text)
         
         uid = request.args.get('uid')
+        userId = uid
 
+
+
+        
         db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(userId)
+        user_data = user_ref.get().to_dict()
+
+        if user_data['status'] != 'payment_method_added':
+            return jsonify({'error': 'Please add payment method', "message" : "Payment Issue" , "status": 400}), 200
+
+
         now = datetime.datetime.utcnow()
         query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
         query_text = text.strip()
@@ -177,6 +188,18 @@ def upload_files():
                         ,"source":"upload_file","query_id":query_id,"query":query_text,"response":full_response.strip(),"upload_file":filename})
 
                     completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
+                    if user_data['stripe_subscription_id']:
+                        subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
+                        total_tokens = prompt_tokens + completion_tokens
+                        print("all tokens", total_tokens, subscription_item_id)
+
+                        stripe.SubscriptionItem.create_usage_record(
+                            subscription_item_id,  # Use the retrieved subscription item ID
+                            quantity=total_tokens,
+                            api_key=stripe_secret_key,
+                            action='increment',
+                        )
+
 
 ############################# STRIPE Start ###################################
                     # stripe.SubscriptionItem.create_usage_record(
@@ -194,12 +217,12 @@ def upload_files():
                 error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
 
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -207,12 +230,12 @@ def upload_files():
             except APIError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -221,12 +244,12 @@ def upload_files():
             except RateLimitError:
                 error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -234,12 +257,12 @@ def upload_files():
             except APIConnectionError:
                 error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -247,12 +270,12 @@ def upload_files():
             except ServiceUnavailableError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -260,12 +283,12 @@ def upload_files():
             except:
                 error = "Error: {}".format(traceback.format_exc())
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
@@ -289,12 +312,21 @@ def summarise_text():
         db = firestore.Client.from_service_account_info(firestore_key_json)
         now = datetime.datetime.utcnow()
         query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
+        
 
         data = request.get_json()
         if 'text' not in data:
             return jsonify({'error': 'Text not found in request'}), 400
         
         text = data['text']
+        userId = data['userId']
+
+        user_ref = db.collection('users').document(userId)
+        user_data = user_ref.get().to_dict()
+
+        if user_data['status'] != 'payment_method_added':
+            return jsonify({'error': 'Please add payment method', "message" : "Payment Issue" , "status": 400}), 200
+
         query_text = text.strip()
         mod_response = openai.Moderation.create(input=text, )
         if (mod_response['results'][0]['flagged']):
@@ -329,20 +361,33 @@ def summarise_text():
                             ,"source":"paste_content","query_id":query_id,"query":query_text,"response":full_response.strip()})
 
                     completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
+
                     db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                         .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                             ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
+                    if user_data['stripe_subscription_id']:
+                        subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
+                        total_tokens = prompt_tokens + completion_tokens
+                        print("all tokens", total_tokens, subscription_item_id)
+
+                        stripe.SubscriptionItem.create_usage_record(
+                            subscription_item_id,  # Use the retrieved subscription item ID
+                            quantity=total_tokens,
+                            api_key=stripe_secret_key,
+                            action='increment',
+                        )
+
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
 
             except AuthenticationError:
                 error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
@@ -350,12 +395,12 @@ def summarise_text():
             except APIError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -364,12 +409,12 @@ def summarise_text():
             except RateLimitError:
                 error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -378,12 +423,12 @@ def summarise_text():
             except APIConnectionError:
                 error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -392,12 +437,12 @@ def summarise_text():
             except ServiceUnavailableError:
                 error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -406,12 +451,12 @@ def summarise_text():
             except:
                 error = "Error: {}".format(traceback.format_exc())
                 logger.error(error)
-                capture_exception(
-                    error, data={"request": request}
-                )
-                capture_message(
-                    traceback.format_exc(),
-                )
+                # capture_exception(
+                #     error, data={"request": request}
+                # )
+                # capture_message(
+                #     traceback.format_exc(),
+                # )
 
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
@@ -510,8 +555,153 @@ def browser_extn_search():
         logger.error(error)
         return jsonify({"message": error}), 400
 
+@app.route("/user-created", methods=["POST"])
+def user_created():
+    try:
+        # Extract user data from the request
+        data = request.get_json()
+
+        # Create a Stripe customer
+        stripe_customer = stripe.Customer.create(
+            email=data['data']['email_addresses'][0]['email_address'],
+            name=f"{data['data']['first_name']} {data['data']['last_name']}"
+        )
+
+        # Create a Stripe subscription
+        stripe_subscription = stripe.Subscription.create(
+            customer=stripe_customer.id,
+            items=[{'price': 'price_1OQ4ZYSGzDVqCKx1RX63pMag'}]
+        )
+
+        print("stripe_sub", stripe_subscription)
+
+        # Prepare user data for Firestore
+        user_data = {
+            'stripe_customer_id': stripe_customer.id,
+            'stripe_subscription_id': stripe_subscription.id,
+            'stripe_subscription_item_id': stripe_subscription['items']['data'][0]['id'],
+            # Include other user data you want to store
+            'user_id': data['data']['id'],
+            'first_name': data['data']['first_name'],
+            'last_name': data['data']['last_name'],
+            'email': data['data']['email_addresses'][0]['email_address'],
+            'created_at': firestore.SERVER_TIMESTAMP,
+            'status': 'signup'
+
+        }
+
+        # Save to Firestore
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        db.collection('users').document(data['data']['id']).set(user_data)
+
+        return jsonify({"message": "User created and Stripe subscription set"}), 200
+    
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+    
+
+@app.route("/api/check-user-status", methods=["POST"])
+def check_user_status():
+    try:
+        data = request.get_json()
+        user_id = data['id']
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(user_id)
+        user_data = user_ref.get().to_dict()
+        if user_data:
+            return jsonify({"status": user_data['status']})
+
+        return jsonify({"status": "not_found"}), 404
+    
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+
+
+@app.route("/api/update-user-status", methods=["POST"])
+def update_user_status():
+    try:
+        data = request.get_json()
+        user_id = data['id']
+        status = data['status']
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(user_id)
+        user_ref.update({'status': status})
+        return jsonify({"message": "User status updated successfully"})
+    
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+
+
+@app.route("/api/get-user-data", methods=["POST"])
+def get_user_data():
+    try:
+        data = request.get_json()
+        user_id = data['id']
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(user_id)
+        user_data = user_ref.get().to_dict()
+        if user_data:
+            return jsonify(user_data)
+
+        return jsonify({"message": "User not found"}), 404
+    
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+
+
+
+@app.route('/api/add-payment-method', methods=['POST'])
+def add_payment_method():
+    try:
+        data = request.json
+        customer_id = data.get('customer_id')  # Replace with actual customer ID
+        payment_method_id = data.get('payment_method_id')
+        user_id = data.get('id')
+        # Attach the payment method to the customer
+        stripe.PaymentMethod.attach(
+            payment_method_id,
+            customer=customer_id
+        )
+
+        # Set the default payment method
+        stripe.Customer.modify(
+            customer_id,
+            invoice_settings={
+                'default_payment_method': payment_method_id
+            }
+        )
+        status = 'payment_method_added'
+        firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
+        firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(user_id)
+        user_ref.update({'status': status})
+
+
+
+        return jsonify({'message': 'Payment method added successfully'}), 200
+
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
-    # app.run(debug=True, port=8080) ### For Local host
+    # app.run(debug=True, host='0.0.0.0', port=8000) ### For Local host
     # app.run(port=8080) ### For Local host
