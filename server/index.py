@@ -62,49 +62,49 @@ CORS(app)
 @app.route("/api", methods=['GET'])
 
 ####################################### START STRIPE ############################################
-@app.route("/api/create-sub", methods=["POST"])
-def createSub():
-    try:
-        user_id = request.args.get("uid")
-        def get_cost_units(uid):
-            # db = get_firebase_app()
-            db = firestore.Client.from_service_account_info(firestore_key_json)
-            collection_ref = db.collection(uid + "_usage")
-            docs = collection_ref.stream()
-            tot_units = 0
-            for doc in docs:
-                data = doc.to_dict()
-                if "total_tokens" in data:
-                    tot_units += data["total_tokens"]
-            return tot_units
-        tot_units = get_cost_units(user_id)
-        # print(f"Total units consumed {tot_units}, by userid {user_id}")
+# @app.route("/api/create-sub", methods=["POST"])
+# def createSub():
+#     try:
+#         user_id = request.args.get("uid")
+#         def get_cost_units(uid):
+#             # db = get_firebase_app()
+#             db = firestore.Client.from_service_account_info(firestore_key_json)
+#             collection_ref = db.collection(uid + "_usage")
+#             docs = collection_ref.stream()
+#             tot_units = 0
+#             for doc in docs:
+#                 data = doc.to_dict()
+#                 if "total_tokens" in data:
+#                     tot_units += data["total_tokens"]
+#             return tot_units
+#         tot_units = get_cost_units(user_id)
+#         # print(f"Total units consumed {tot_units}, by userid {user_id}")
 
-        # METERED USAGE RECORDING GOES HERE        
-        # https://stripe.com/docs/billing/subscriptions/usage-based/recording-usage
-        # stripe.SubscriptionItem.create_usage_record('{{SUBSCRIPTION_ITEM_ID}}',quantity=tot_units,timestamp=<timestamp>,action='increment',)
-        # TO REMOVE THIS LOGIC, AND CHANGE TO METERED USAGE LOGIC IN upload-file OR summarise-text API CALLS
-        unit_amount = math.ceil(tot_units * 100)
-        product = stripe.Product.create(name="privateGPT", description="private gpt")
-        price = stripe.Price.create(
-            unit_amount=unit_amount,
-            currency="usd",
-            recurring={"interval": "month", "usage_type": "metered"},
-            product=product.id,
-        )
-        metered_price_id = price.id
-        session = stripe.checkout.Session.create(
-            shipping_address_collection={"allowed_countries": ["IN"]},
-            line_items=[{"price": metered_price_id}],
-            mode="subscription",
-            success_url="http://localhost:3000" + "?success=true",
-            cancel_url="http://localhost:3000" + "?canceled=true",
-        )
-    except Exception as error:
-        # print(error)
-        return jsonify(error=str(error)), 500
-    # print(session.url)
-    return jsonify({"checkout_url": session.url})  # redirect(session.url, code=303)
+#         # METERED USAGE RECORDING GOES HERE        
+#         # https://stripe.com/docs/billing/subscriptions/usage-based/recording-usage
+#         # stripe.SubscriptionItem.create_usage_record('{{SUBSCRIPTION_ITEM_ID}}',quantity=tot_units,timestamp=<timestamp>,action='increment',)
+#         # TO REMOVE THIS LOGIC, AND CHANGE TO METERED USAGE LOGIC IN upload-file OR summarise-text API CALLS
+#         unit_amount = math.ceil(tot_units * 100)
+#         product = stripe.Product.create(name="privateGPT", description="private gpt")
+#         price = stripe.Price.create(
+#             unit_amount=unit_amount,
+#             currency="usd",
+#             recurring={"interval": "month", "usage_type": "metered"},
+#             product=product.id,
+#         )
+#         metered_price_id = price.id
+#         session = stripe.checkout.Session.create(
+#             shipping_address_collection={"allowed_countries": ["IN"]},
+#             line_items=[{"price": metered_price_id}],
+#             mode="subscription",
+#             success_url="http://localhost:3000" + "?success=true",
+#             cancel_url="http://localhost:3000" + "?canceled=true",
+#         )
+#     except Exception as error:
+#         # print(error)
+#         return jsonify(error=str(error)), 500
+#     # print(session.url)
+#     return jsonify({"checkout_url": session.url})  # redirect(session.url, code=303)
 ####################################### END STRIPE ##############################################
 
 def home():
@@ -191,7 +191,7 @@ def upload_files():
                     if user_data['stripe_subscription_id']:
                         subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
                         total_tokens = prompt_tokens + completion_tokens
-                        print("all tokens", total_tokens, subscription_item_id)
+                        # print("all tokens", total_tokens, subscription_item_id)
 
                         stripe.SubscriptionItem.create_usage_record(
                             subscription_item_id,  # Use the retrieved subscription item ID
@@ -368,7 +368,7 @@ def summarise_text():
                     if user_data['stripe_subscription_id']:
                         subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
                         total_tokens = prompt_tokens + completion_tokens
-                        print("all tokens", total_tokens, subscription_item_id)
+                        # print("all tokens", total_tokens, subscription_item_id)
 
                         stripe.SubscriptionItem.create_usage_record(
                             subscription_item_id,  # Use the retrieved subscription item ID
@@ -568,12 +568,11 @@ def user_created():
         )
 
         # Create a Stripe subscription
+        stripe_std_coding_price = os.environ['STRIPE_STANDARD_CODING_PRICE_KEY']
         stripe_subscription = stripe.Subscription.create(
             customer=stripe_customer.id,
-            items=[{'price': 'price_1OQ4ZYSGzDVqCKx1RX63pMag'}]
+            items=[{'price': stripe_std_coding_price}]
         )
-
-        print("stripe_sub", stripe_subscription)
 
         # Prepare user data for Firestore
         user_data = {
@@ -698,10 +697,10 @@ def add_payment_method():
         return jsonify({'message': 'Payment method added successfully'}), 200
 
     except Exception as e:
-        print(traceback.format_exc())
+        # print(traceback.format_exc())
         return jsonify({'error': str(e)}), 400
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True) ### For Render
-    # app.run(debug=True, host='0.0.0.0', port=8000) ### For Local host
+    # app.run(debug=True, port=8080) ### For Local host
     # app.run(port=8080) ### For Local host

@@ -1,8 +1,6 @@
 import React from 'react';
 
 const TableComponent = ({ completeStream }) => {
-  // console.log("Hi 1")
-  // console.log("1 TableComponent.jsx >> completeStream:",completeStream)
   const isBrowser = typeof window !== 'undefined'; // Check if window object is defined
 
   const [width, setWidth] = React.useState(isBrowser ? window.innerWidth : 0);

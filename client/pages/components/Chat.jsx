@@ -30,8 +30,7 @@ import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-const stripePromise = loadStripe('pk_test_51ONGj9SGzDVqCKx1mc6lPSykMVRvItL9wvMvllR78JwP4xGTKmCbWTy5wzKfWBMPJqY6SgWReca1yqC1JhR0HeUD00j0mbKxbF');
-
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
 export default function Chat() {
   const [fileSummaries, setFileSummaries] = useState([]);
@@ -57,7 +56,6 @@ export default function Chat() {
   };
 
   const checkUserStatus =async ()=>{
-    console.log("userStatus", user.id)
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
       if (response.data.status === 'signup') {
@@ -111,13 +109,11 @@ export default function Chat() {
 
   const exportStreamToExcel = (streamData) => {
     const jsonData = JSON.parse(streamData.replace(/\\n/g, "").replace(/\\/g, ""));
-    // console.log(jsonData)
     const data = []
     jsonData.forEach((item) => {
 
       let fileName = item.filename
       delete item.fileName
-      // console.log("filename:",fileName)
 
       data.push({
         // fileName,  //item.fileName
@@ -142,7 +138,6 @@ export default function Chat() {
     <div className="container mx-auto  flex flex-col"
       style={{ minHeight: `calc(100vh - ${3}rem)`, backgroundColor: "#ebeef4", color: "#000" }}>
         <Elements stripe={stripePromise}>
-
         <Modal isOpen={open} setOpen={setOpen} userData={userData} />
         </Elements>
 

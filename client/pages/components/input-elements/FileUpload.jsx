@@ -36,7 +36,6 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
   const { user } = useUser();
 
 const checkUserStatus =async ()=>{
-    console.log("userStatus", user.id)
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
       if (response.data.status !== 'payment_method_added') {
@@ -63,7 +62,6 @@ const checkUserStatus =async ()=>{
     setCompleteStream(false)
     setStreamResponse("")
     const userStatus = await checkUserStatus()
-    console.log("userStatus", userStatus)
     if (!userStatus){
       setIsLoading(false);
       return 
@@ -98,7 +96,6 @@ const checkUserStatus =async ()=>{
             const { done, value } = await reader.read();
 
             if (done) {
-              // console.log("Stream complete")
               setIsLoading(false);
               result([{
                 summary: streamResponse.replace(/\\n/g, '\n')
@@ -109,11 +106,8 @@ const checkUserStatus =async ()=>{
               break;
             }
             let chunk = new TextDecoder("utf-8").decode(value);
-            // console.log("Stream value:",chunk)
             result([{}])
             setStreamResponse((prev) => prev + chunk)
-            // let chunk = 
-
 
           }
         }

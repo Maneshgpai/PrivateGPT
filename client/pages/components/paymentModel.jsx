@@ -32,14 +32,12 @@ const Modal = ({isOpen, setOpen, userData}) => {
     if (error) {
       console.log('[error]', error);
     } else {
-      console.log('[PaymentMethod]', paymentMethod);
       // Send the paymentMethod.id to your backend (e.g., via `axios.post`)
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/add-payment-method`, {
         payment_method_id: paymentMethod.id,
         customer_id: userData?.stripe_customer_id, // Use the customer ID from userData
         id: user.id,
       }).then(response => {
-        console.log('Payment method saved', response);
         setOpen(false);
         // Handle response
       }).catch(error => {
@@ -50,7 +48,6 @@ const Modal = ({isOpen, setOpen, userData}) => {
   };
 
 
-  console.log("userData", userData)
 const handleAddCard = () => {
   setShowCardElement(true);
 };

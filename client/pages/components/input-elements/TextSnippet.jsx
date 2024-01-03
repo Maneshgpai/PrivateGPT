@@ -19,7 +19,6 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
 
 
   const checkUserStatus =async ()=>{
-    console.log("userStatus", user.id)
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
       if (response.data.status !== 'payment_method_added') {
@@ -45,7 +44,6 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
     setIsLoading(true);
     
     const userStatus = await checkUserStatus()
-    console.log("userStatus", userStatus)
     if (!userStatus){
       setIsLoading(false);
       return 
@@ -56,9 +54,6 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
     try {
       const headers = new Headers();
       headers.append("Content-Type", "application/json");
-
-      // console.log("selectedCodeset:",selectedCodeset)
-      // console.log("selectedPhysicianType:",selectedPhysicianType)
 
       const queryParams = new URLSearchParams();
       queryParams.append("uid", user.id);
@@ -83,7 +78,6 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
             const { done, value } = await reader.read();
 
             if (done) {
-              // console.log("Stream complete")
               setIsLoading(false);
               result([{
                 summary: streamResponse.replace(/\\n/g, '\n')
@@ -93,12 +87,8 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
               break;
             }
             let chunk = new TextDecoder("utf-8").decode(value);
-            // console.log("Stream value:",chunk)
             result([{}])
             setStreamResponse((prev) => prev + chunk)
-            // let chunk = 
-
-
           }
         }
         processStream().catch(error => {

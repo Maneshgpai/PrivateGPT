@@ -30,9 +30,6 @@ function TextSnippet({ result, Olddata, streamTextResponse, setStreamTextRespons
       const headers = new Headers();
       headers.append("Content-Type", "application/json");
 
-      // console.log("selectedCodeset:",selectedCodeset)
-      // console.log("selectedPhysicianType:",selectedPhysicianType)
-
       const queryParams = new URLSearchParams();
       queryParams.append("uid", user.id);
 
@@ -53,7 +50,6 @@ function TextSnippet({ result, Olddata, streamTextResponse, setStreamTextRespons
             const { done, value } = await reader.read();
 
             if (done) {
-              // console.log("Stream complete")
               setIsLoading(false);
               result([{
                 summary: streamResponse.replace(/\\n/g, '\n')
@@ -63,12 +59,8 @@ function TextSnippet({ result, Olddata, streamTextResponse, setStreamTextRespons
               break;
             }
             let chunk = new TextDecoder("utf-8").decode(value);
-            // console.log("Stream value:",chunk)
             result([{}])
             setStreamResponse((prev) => prev + chunk)
-            // let chunk = 
-
-
           }
         }
         processStream().catch(error => {
