@@ -28,9 +28,7 @@ import Stack from '@mui/material/Stack';
 import Modal from './paymentModel';
 import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+
 
 export default function Chat() {
   const [fileSummaries, setFileSummaries] = useState([]);
@@ -137,9 +135,8 @@ export default function Chat() {
   return (
     <div className="container mx-auto  flex flex-col"
       style={{ minHeight: `calc(100vh - ${3}rem)`, backgroundColor: "#ebeef4", color: "#000" }}>
-        <Elements stripe={stripePromise}>
+
         <Modal isOpen={open} setOpen={setOpen} userData={userData} />
-        </Elements>
 
       <div className="border-gray-100  shadow-none sticky top-0" style={{ backgroundColor: "#ebeef4", color: "#000" }}>
       <h1 className="text-center py-3 font-bold lg:text-xl md:text-lg sm:text-lg text-gray-600">
