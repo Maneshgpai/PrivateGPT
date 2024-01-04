@@ -85,7 +85,6 @@ function QuickSearch({ result, Olddata, streamResponse, setStreamResponse, clear
                         const { done, value } = await reader.read();
 
                         if (done) {
-                            // console.log("Stream complete")
                             setIsLoading(false);
                             result([{
                                 summary: streamResponse.replace(/\\n/g, '\n')
@@ -95,12 +94,8 @@ function QuickSearch({ result, Olddata, streamResponse, setStreamResponse, clear
                             break;
                         }
                         let chunk = new TextDecoder("utf-8").decode(value);
-                        // console.log("Stream value:",chunk)
                         result([{}])
                         setStreamResponse((prev) => prev + chunk)
-                        // let chunk = 
-
-
                     }
                 }
                 processStream().catch(error => {
@@ -148,7 +143,6 @@ function QuickSearch({ result, Olddata, streamResponse, setStreamResponse, clear
                         const { done, value } = await reader.read();
 
                         if (done) {
-                            // console.log("Stream complete")
                             setIsLoading(false);
                             result([{
                                 summary: streamResponse.replace(/\\n/g, '\n')
@@ -158,11 +152,8 @@ function QuickSearch({ result, Olddata, streamResponse, setStreamResponse, clear
                             break;
                         }
                         let chunk = new TextDecoder("utf-8").decode(value);
-                        // console.log("Stream value:",chunk)
                         result([{}])
                         setStreamResponse((prev) => prev + chunk)
-                        // let chunk = 
-
 
                     }
                 }

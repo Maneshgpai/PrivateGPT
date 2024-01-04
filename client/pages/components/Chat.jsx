@@ -54,7 +54,6 @@ export default function Chat() {
   };
 
   const checkUserStatus =async ()=>{
-    console.log("userStatus", user.id)
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
       if (response.data.status === 'signup') {
@@ -108,13 +107,11 @@ export default function Chat() {
 
   const exportStreamToExcel = (streamData) => {
     const jsonData = JSON.parse(streamData.replace(/\\n/g, "").replace(/\\/g, ""));
-    // console.log(jsonData)
     const data = []
     jsonData.forEach((item) => {
 
       let fileName = item.filename
       delete item.fileName
-      // console.log("filename:",fileName)
 
       data.push({
         // fileName,  //item.fileName
@@ -138,7 +135,6 @@ export default function Chat() {
   return (
     <div className="container mx-auto  flex flex-col"
       style={{ minHeight: `calc(100vh - ${3}rem)`, backgroundColor: "#ebeef4", color: "#000" }}>
-   
 
         <Modal isOpen={open} setOpen={setOpen} userData={userData} />
 

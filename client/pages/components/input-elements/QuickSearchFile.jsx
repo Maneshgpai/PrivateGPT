@@ -72,7 +72,6 @@ function FileUpload({ result, Olddata, streamFileResponse, setStreamFileResponse
             const { done, value } = await reader.read();
 
             if (done) {
-              // console.log("Stream complete")
               setIsLoading(false);
               result([{
                 summary: streamFileResponse.replace(/\\n/g, '\n')
@@ -82,12 +81,8 @@ function FileUpload({ result, Olddata, streamFileResponse, setStreamFileResponse
               break;
             }
             let chunk = new TextDecoder("utf-8").decode(value);
-            // console.log("Stream value:",chunk)
             result([{}])
             setStreamFileResponse((prev) => prev + chunk)
-            // let chunk = 
-
-
           }
         }
         processStream().catch(error => {
