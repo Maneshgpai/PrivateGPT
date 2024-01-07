@@ -558,14 +558,19 @@ def browser_extn_search():
 @app.route("/user-created", methods=["POST"])
 def user_created():
     try:
+        print("In user-created**********")
         # Extract user data from the request
         data = request.get_json()
+        print("user-created> data:",data)
+        print("user-created> name:",data['data']['last_name'])
+        print("user-created> email:",data['data']['email_addresses'][0]['email_address'])
 
         # Create a Stripe customer
         stripe_customer = stripe.Customer.create(
             email=data['data']['email_addresses'][0]['email_address'],
             name=f"{data['data']['first_name']} {data['data']['last_name']}"
         )
+        print("Created stripe customer")
 
         # Create a Stripe subscription
         stripe_std_coding_price = os.environ['STRIPE_STANDARD_CODING_PRICE_KEY']
@@ -573,6 +578,7 @@ def user_created():
             customer=stripe_customer.id,
             items=[{'price': stripe_std_coding_price}]
         )
+        print("Created stripe subscription")
 
         # Prepare user data for Firestore
         user_data = {
@@ -588,18 +594,21 @@ def user_created():
             'status': 'signup'
 
         }
+        print("Prepared user data")
 
         # Save to Firestore
         firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
         firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
         db = firestore.Client.from_service_account_info(firestore_key_json)
         db.collection('users').document(data['data']['id']).set(user_data)
+        print("Saved to user collection")
 
         return jsonify({"message": "User created and Stripe subscription set"}), 200
     
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
+        print("error:",error)
         return jsonify({"message": error}), 400
     
 
@@ -668,10 +677,12 @@ def get_user_data():
 @app.route('/api/add-payment-method', methods=['POST'])
 def add_payment_method():
     try:
+        print("In add-payment-method *************")
         data = request.json
         customer_id = data.get('customer_id')  # Replace with actual customer ID
         payment_method_id = data.get('payment_method_id')
         user_id = data.get('id')
+        print("customer_id:",customer_id,". payment_method_id:",payment_method_id,". user_id:",user_id)
         # Attach the payment method to the customer
         stripe.PaymentMethod.attach(
             payment_method_id,
@@ -697,7 +708,7 @@ def add_payment_method():
         return jsonify({'message': 'Payment method added successfully'}), 200
 
     except Exception as e:
-        # print(traceback.format_exc())
+        print(traceback.format_exc())
         return jsonify({'error': str(e)}), 400
 
 if __name__ == "__main__":
