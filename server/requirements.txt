@@ -12,3 +12,4 @@ PyPDF2
 google-cloud-firestore==2.13.1
 pytz
 stripe
+svix==1.15.0
