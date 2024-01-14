@@ -33,6 +33,7 @@ const Modal = ({isOpen, setOpen, userData}) => {
       console.log('[error]', error);
     } else {
       // Send the paymentMethod.id to your backend (e.g., via `axios.post`)
+      console.log("stripe_customer_id:",userData?.stripe_customer_id)
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/add-payment-method`, {
         payment_method_id: paymentMethod.id,
         customer_id: userData?.stripe_customer_id, // Use the customer ID from userData
@@ -55,7 +56,7 @@ const handleAddCard = () => {
   const skipUserStatus =async ()=>{
     const data = {
       id: user.id,
-      status: "skipped"
+      status: "payment_method_not_added"
     }
     const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/update-user-status`, data)
     setOpen(false);
