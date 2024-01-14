@@ -89,10 +89,10 @@ def setCodeGenPrompt(note, search_type):
         {os.environ['OPENAI_CODEGEN_PROMPT4']}\
         {note}\
         {os.environ['OPENAI_CODEGEN_PROMPT_END']}"""
-    elif search_type == 'browser_extn':
+    elif search_type == 'browser_extn_medcode':
       prompt = f"""{os.environ['OPENAI_BROWSER_EXTN_PROMPT1']}\
         {note}\
-        {os.environ['OPENAI_BROWSER_EXTN_PROMPT2']}"""
+        {os.environ['OPENAI_BROWSER_EXTN_PROMPT_END']}"""
     else:
       prompt = f"""{os.environ['OPENAI_CODEGEN_PROMPT_START']}\
         {os.environ['OPENAI_CODEGEN_PROMPT2']}\
