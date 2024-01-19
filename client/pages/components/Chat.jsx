@@ -25,7 +25,8 @@ import Button from '@mui/material/Button';
 import SkeletonTable from './SkeletonTable';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
-import Modal from './paymentModel';
+// import Modal from './paymentModel';
+import Modal from './trialAnnounceModel';
 import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
 
@@ -43,9 +44,11 @@ export default function Chat() {
   const [completeFileStream, setCompleteFileStream] = useState(false);
   const [textCompleteStream] = useState(false);/////////
   const [isOpen, setIsOpen] = useState(true);
+  const [isTrialOpen, setIsTrialOpen] = useState(true);
   const [pdfView, setPdfView] = useState(false)
   const [value, setValue] = React.useState(0);
   const [open, setOpen] = React.useState(false);
+  const [openTrial, setOpenTrial] = React.useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const [userData, setUserData] = useState();
 
@@ -56,7 +59,7 @@ export default function Chat() {
   const checkUserStatus =async ()=>{
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
-      if (response.data.status === 'signup') {
+      if (response.data.status === 'trialing') {
         setOpen(true);
       } else {
         setOpen(false);

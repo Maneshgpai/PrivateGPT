@@ -9,7 +9,7 @@ from langchain.prompts import PromptTemplate
 import openai
 import tiktoken
 from logging_config import logger
-from sentry_sdk import capture_exception, capture_message
+# from sentry_sdk import capture_exception, capture_message
 import traceback
 from flask import jsonify
 

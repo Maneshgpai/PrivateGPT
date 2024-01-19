@@ -62,6 +62,7 @@ def home():
 
 @app.route("/api/upload-file", methods=["POST"])
 def upload_files():
+    # print("Entered Upload File #################")
     if not request.files.getlist("files"):
         logger.error("No file detected")
         return jsonify({"message": "Please send one or more Files"}), 400
@@ -95,8 +96,16 @@ def upload_files():
         user_ref = db.collection('users').document(userId)
         user_data = user_ref.get().to_dict()
 
-        if user_data['status'] != 'payment_method_added':
-            return jsonify({'error': 'Please add payment method', "message" : "Payment Issue" , "status": 400}), 200
+        ### Check Stripe subscription to see if Trial is over?
+        # if user_data['status'] != 'payment_method_added':
+        #     return jsonify({'error': 'Please add payment method', "message" : "Payment Issue" , "status": 400}), 200
+        stripe_subscription = stripe.Subscription.retrieve(user_data['stripe_subscription_id'])
+        trial_end_dt = datetime.datetime.fromtimestamp(stripe_subscription["trial_end"]).date()
+        if trial_end_dt < datetime.datetime.now(pytz.utc).date():
+            user_ref = db.collection('users').document(userId)
+            user_ref.update({'status': stripe_subscription["status"]})
+            user_ref.update({'status_upd_dt': firestore.SERVER_TIMESTAMP})
+            return jsonify({'error': 'Trial period is over! Please contact us at hello@physikally.com for an extended subscription', "message" : "Payment Issue" , "status": 400}), 200
 
 
         now = datetime.datetime.utcnow()
@@ -246,6 +255,7 @@ def upload_files():
 @app.route("/api/summarise-text", methods=["POST"])
 def summarise_text():
     try:
+        # print("Entered Summarize Text ////////////")
         uid = request.args.get('uid')            
         firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
         firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
@@ -260,12 +270,21 @@ def summarise_text():
         
         text = data['text']
         userId = data['userId']
+        # print("summarise-text > text:",text,", userId:",userId)
 
         user_ref = db.collection('users').document(userId)
         user_data = user_ref.get().to_dict()
 
-        if user_data['status'] != 'payment_method_added':
-            return jsonify({'error': 'Please add payment method', "message" : "Payment Issue" , "status": 400}), 200
+        ### Check Stripe subscription to see if Trial is over?
+        # if user_data['status'] != 'payment_method_added':
+        #     return jsonify({'error': 'Please add payment method', "message" : "Payment Issue" , "status": 400}), 200
+        stripe_subscription = stripe.Subscription.retrieve(user_data['stripe_subscription_id'])
+        trial_end_dt = datetime.datetime.fromtimestamp(stripe_subscription["trial_end"]).date()
+        if trial_end_dt < datetime.datetime.now(pytz.utc).date():
+            user_ref = db.collection('users').document(userId)
+            user_ref.update({'status': stripe_subscription["status"]})
+            user_ref.update({'status_upd_dt': firestore.SERVER_TIMESTAMP})
+            return jsonify({'error': 'Trial period is over! Please contact us at hello@physikally.com for an extended subscription', "message" : "Payment Issue" , "status": 400}), 200
 
         query_text = text.strip()
         mod_response = openai.Moderation.create(input=text, )
@@ -285,7 +304,7 @@ def summarise_text():
             # 'code_response' for Generating medical codes directly from the text pasted
             message = openai_funcs.setChatMsg('code_response', prompt)
             prompt_tokens = openai_funcs.num_tokens_from_messages(message)
-
+            
             try:
                 def generate():
                     full_response = ""
@@ -301,15 +320,14 @@ def summarise_text():
                             ,"source":"paste_content","query_id":query_id,"query":query_text,"response":full_response.strip()})
 
                     completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
-
+                    
                     db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                         .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                             ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
                     if user_data['stripe_subscription_id']:
                         subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
                         total_tokens = prompt_tokens + completion_tokens
-                        # print("all tokens", total_tokens, subscription_item_id)
-
+                        
                         stripe.SubscriptionItem.create_usage_record(
                             subscription_item_id,  # Use the retrieved subscription item ID
                             quantity=total_tokens,
@@ -322,12 +340,6 @@ def summarise_text():
             except AuthenticationError:
                 error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
                 logger.error(error)
-                # capture_exception(
-                #     error, data={"request": request}
-                # )
-                # capture_message(
-                #     traceback.format_exc(),
-                # )
                 db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                     .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                           ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
@@ -588,9 +600,13 @@ def user_deleted():
         firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
         db = firestore.Client.from_service_account_info(firestore_key_json)
         user_ref = db.collection('users').document(uid)
-        user_ref.update({'status': "clerk_account_deleted"})
+        user_ref.update({'status': "user_deleted"})
         user_ref.update({'status_upd_dt': firestore.SERVER_TIMESTAMP})
-        return jsonify({"message": "User account and associated data is deleted from server"}), 200
+
+        user_data = user_ref.get().to_dict()
+        stripe.Customer.delete(user_data['stripe_customer_id'])
+
+        return jsonify({"message": "User account with all associated data is deleted from server"}), 200
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
@@ -600,11 +616,11 @@ def user_deleted():
 
 @app.route("/user-created", methods=["POST"])
 def user_created():
-
     # Authenticating Webhook from Clerk
     webhook_secret = os.environ["USER_CREATE_WEBHOOK_SECRET"]
     
     try:
+        # print("Entered user-CREATED++++++++++")
         headers = request.headers
         payload = request.get_data()
         wh = Webhook(webhook_secret)
@@ -621,38 +637,36 @@ def user_created():
             name=f"{data['data']['first_name']} {data['data']['last_name']}"
         )
 
-        
         # Create a Stripe subscription
+        trialDays=14
         stripe_std_coding_price = os.environ['STRIPE_STANDARD_CODING_PRICE_KEY']
         stripe_subscription = stripe.Subscription.create(
             customer=stripe_customer.id,
-            items=[{'price': stripe_std_coding_price}]
+            items=[{'price': stripe_std_coding_price}],
+            trial_period_days=trialDays,
+            payment_settings={"save_default_payment_method": "on_subscription"}
         )
-
         
         # Prepare user data for Firestore
         user_data = {
             'stripe_customer_id': stripe_customer.id,
             'stripe_subscription_id': stripe_subscription.id,
             'stripe_subscription_item_id': stripe_subscription['items']['data'][0]['id'],
-            # Include other user data you want to store
             'user_id': data['data']['id'],
             'first_name': data['data']['first_name'],
             'last_name': data['data']['last_name'],
             'email': data['data']['email_addresses'][0]['email_address'],
             'created_at': firestore.SERVER_TIMESTAMP,
-            'status': 'signup',
+            'status': stripe_subscription.status,
             'status_upd_dt':firestore.SERVER_TIMESTAMP
         }
 
-        
         # Save to Firestore
         firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
         firestore_key_json= json.loads(base64.b64decode(firestore_key).decode('utf-8'))
         db = firestore.Client.from_service_account_info(firestore_key_json)
         db.collection('users').document(data['data']['id']).set(user_data)
 
-        
         return jsonify({"message": "User created and Stripe subscription set"}), 200
     
     except Exception as e:
@@ -664,6 +678,7 @@ def user_created():
 @app.route("/api/check-user-status", methods=["POST"])
 def check_user_status():
     try:
+        # print("CHECK-user-status*********")
         data = request.get_json()
         user_id = data['id']
         firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
@@ -671,20 +686,45 @@ def check_user_status():
         db = firestore.Client.from_service_account_info(firestore_key_json)
         user_ref = db.collection('users').document(user_id)
         user_data = user_ref.get().to_dict()
-        if user_data:
-            return jsonify({"status": user_data['status']})
+        # print(user_data)
 
-        return jsonify({"status": "not_found"}), 404
+        stripe_subscription = stripe.Subscription.retrieve(user_data['stripe_subscription_id'])
+        # print("CHECK-user-status > stripe_subscription:",stripe_subscription)
+        
+        stripe_customer = stripe.Customer.retrieve(user_data['stripe_customer_id'])
+        # print("CHECK-user-status > stripe_customer_payment_flag:",stripe_customer['invoice_settings']['default_payment_method'])
+
+        
+        if stripe_subscription["status"] == 'trialing':
+            # print("User is under trial. Allow usage.")
+            stripe_status = 'trialing'
+        elif (stripe_subscription["status"] == 'active'):
+            if stripe_customer['invoice_settings']['default_payment_method']:
+                # print("User is not in trial but has added payment method. Allow usage.")
+                stripe_status = 'active_and_payment_added'
+            else:
+                # print("User is not in trial. Does not have payment method. Don't allow usage.")
+                stripe_status = 'active_and_payment_not_added'
+        else:
+            stripe_status = stripe_subscription["status"]
+        # print("CHECK-user-status > stripe_subscription_status:",stripe_status)
+
+        if user_data:
+            return jsonify({"status": stripe_status})
+
+        return jsonify({"status": "user_not_found"}), 404
     
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
+        print(error)
         return jsonify({"message": error}), 400
 
 
 @app.route("/api/update-user-status", methods=["POST"])
 def update_user_status():
     try:
+        # print("UPDATE-user-status =================")
         data = request.get_json()
         user_id = data['id']
         status = data['status']
@@ -705,6 +745,7 @@ def update_user_status():
 @app.route("/api/get-user-data", methods=["POST"])
 def get_user_data():
     try:
+        # print("GET-user-data &&&&&&&&&&&&&")
         data = request.get_json()
         user_id = data['id']
         firestore_key = str(os.environ['FIRESTORE_KEY'])[2:-1]
@@ -712,6 +753,7 @@ def get_user_data():
         db = firestore.Client.from_service_account_info(firestore_key_json)
         user_ref = db.collection('users').document(user_id)
         user_data = user_ref.get().to_dict()
+        # print("GET-user-data > user_data:",user_data)
         if user_data:
             return jsonify(user_data)
 
@@ -758,6 +800,6 @@ def add_payment_method():
         return jsonify({'error': str(e)}), 400
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=False) ### For Render
-    # app.run(debug=True, port=8080) ### For Local host
+    # app.run(host='0.0.0.0', port=5000, debug=False) ### For Render
+    app.run(debug=True, port=8080) ### For Local host
     # app.run(port=8080) ### For Local host

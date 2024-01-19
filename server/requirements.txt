@@ -7,7 +7,7 @@ python-dotenv
 Werkzeug==3.0.1
 langchain==0.0.338
 gunicorn==21.2.0
-sentry-sdk==1.32.0
+# sentry-sdk==1.32.0
 PyPDF2
 google-cloud-firestore==2.13.1
 pytz
