@@ -25,8 +25,8 @@ import Button from '@mui/material/Button';
 import SkeletonTable from './SkeletonTable';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
-// import Modal from './paymentModel';
-import Modal from './trialAnnounceModel';
+import Modal from './paymentModel';
+// import Modal from './trialAnnounceModel';
 import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
 
@@ -59,10 +59,10 @@ export default function Chat() {
   const checkUserStatus =async ()=>{
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
-      if (response.data.status === 'trialing') {
-        setOpen(true);
-      } else {
+      if (response.data.status === 'trialing' || response.data.status == 'active_and_payment_added') {
         setOpen(false);
+      } else {
+        setOpen(true);
       }
 
       const userResponse = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/get-user-data`,{ id: user.id } )

@@ -19,16 +19,17 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
 
 
   const checkUserStatus =async ()=>{
+    console.log("Entered checkUserStatus")
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
-      if (response.data.status == 'trialing ' || response.data.status == 'active_and_payment_added') {
+      if (response.data.status == 'trialing' || response.data.status == 'active_and_payment_added') {
+        console.log("Setting setOpen")
         setOpen(false);
         return true
       } else {
         setOpen(true);
         return false
       }
-
     }
     catch (e) {
       console.log(e)
@@ -44,7 +45,9 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
     setIsLoading(true);
     
     const userStatus = await checkUserStatus()
+    console.log("userStatus:",userStatus)
     if (!userStatus){
+      console.log("setIsLoading(false)")
       setIsLoading(false);
       return 
     }
@@ -57,7 +60,6 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
 
       const queryParams = new URLSearchParams();
       queryParams.append("uid", user.id);
-
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL
         }/api/summarise-text?${queryParams.toString()}`, {
@@ -96,12 +98,15 @@ function TextSnippet({ result, Olddata, streamResponse, setStreamResponse, clear
         });
 
       }
+      else if (response.status === 201){
+        setIsLoading(false);
+        setError(response.message);
+      }
       
     } catch (e) {
       setIsLoading(false);
       if (e.message === "Payment Issue"){
         setOpen(true)
-
       }
       setError(e.message);
     }

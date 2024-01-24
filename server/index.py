@@ -91,7 +91,6 @@ def upload_files():
         
         uid = request.args.get('uid')
         userId = uid
-        
         db = firestore.Client.from_service_account_info(firestore_key_json)
         user_ref = db.collection('users').document(userId)
         user_data = user_ref.get().to_dict()
@@ -252,6 +251,35 @@ def upload_files():
                   ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
         return jsonify({"message": error}), 400
 
+@app.route("/api/get-usage", methods=["POST"])
+def get_usage():
+    try:
+        data = request.get_json()
+        uid = data['id']
+        db = firestore.Client.from_service_account_info(firestore_key_json)
+        user_ref = db.collection('users').document(uid)
+        user_data = user_ref.get().to_dict()
+        
+        stripe_usage_hist = stripe.SubscriptionItem.list_usage_record_summaries(user_data['stripe_subscription_item_id'],limit=100,)
+        # print(stripe_usage_hist)
+        usage = []
+        for item in stripe_usage_hist["data"]:
+            data = {}
+            data["start date"]=datetime.datetime.fromtimestamp(item["period"]["start"]).date()
+            if (item["period"]["end"]):
+                data["end date"]=datetime.datetime.fromtimestamp(item["period"]["start"]).date()
+            data["units used"]=item["total_usage"]
+            data["cost"]=round((item["total_usage"] * 0.000169),2)
+            usage.append(data)
+
+        return jsonify({"data": usage}), 200
+    
+    except Exception as e:
+        error = "Error: {}".format(str(e))
+        logger.error(error)
+        return jsonify({"message": error}), 400
+    
+
 @app.route("/api/summarise-text", methods=["POST"])
 def summarise_text():
     try:
@@ -276,15 +304,42 @@ def summarise_text():
         user_data = user_ref.get().to_dict()
 
         ### Check Stripe subscription to see if Trial is over?
-        # if user_data['status'] != 'payment_method_added':
-        #     return jsonify({'error': 'Please add payment method', "message" : "Payment Issue" , "status": 400}), 200
         stripe_subscription = stripe.Subscription.retrieve(user_data['stripe_subscription_id'])
-        trial_end_dt = datetime.datetime.fromtimestamp(stripe_subscription["trial_end"]).date()
-        if trial_end_dt < datetime.datetime.now(pytz.utc).date():
-            user_ref = db.collection('users').document(userId)
-            user_ref.update({'status': stripe_subscription["status"]})
-            user_ref.update({'status_upd_dt': firestore.SERVER_TIMESTAMP})
-            return jsonify({'error': 'Trial period is over! Please contact us at hello@physikally.com for an extended subscription', "message" : "Payment Issue" , "status": 400}), 200
+        status = stripe_subscription["status"]
+        # print("status:",status)
+        # trial_end_dt = datetime.datetime.fromtimestamp(stripe_subscription["trial_end"]).date()
+        # print(stripe_subscription["status"])
+        # print(trial_end_dt)
+        ### If trial_end_dt is available, that means the subscription is in trial period
+        # if not(not(trial_end_dt)):
+            # if trial_end_dt < datetime.datetime.now(pytz.utc).date():
+            #     user_ref = db.collection('users').document(userId)
+            #     user_ref.update({'status': stripe_subscription["status"]})
+            #     user_ref.update({'status_upd_dt': firestore.SERVER_TIMESTAMP})
+            #     return jsonify({'error': 'Trial period is over! Please contact us at hello@physikally.com to continue using', "message" : "Trial period is over! Please contact us at hello@physikally.com to continue using" , "status": 400}), 200
+            # if trial_end_dt.replace(day=1) > datetime.datetime.now(pytz.utc).date().replace(day=1):
+
+
+        ### Check if monthly usage is > $10:
+        stripe_usage = stripe.Invoice.upcoming(subscription=user_data['stripe_subscription_id'])
+        # billing_amount_due = stripe_usage["amount_due"]
+        billing_period_start_dt = datetime.datetime.fromtimestamp(stripe_usage["period_start"]).date()
+        billing_period_end_dt = datetime.datetime.fromtimestamp(stripe_usage["period_end"]).date()
+        today = datetime.datetime.now(pytz.utc).date()
+
+        # print("+++++++++++++++++++++++++++++++stripe_usage_hist:",stripe_usage_hist)
+        # total_usage = stripe_usage_hist["data"][0]["total_usage"]
+        # total_usage_val = total_usage * 0.000169
+        # print("stripe_usage_hist.data.total_usage:",total_usage,", total_usage_val:",total_usage_val)
+        # print("stripe_subscription:",stripe_subscription)
+        # print("***********plan",stripe_subscription["items"]["data"][0]["plan"])
+        # print("***********plan details:",stripe.Plan.retrieve(stripe_subscription["items"]["data"][0]["plan"]["id"]))
+        # print("***********product details:",stripe.Product.retrieve(stripe_subscription["items"]["data"][0]["plan"]["product"]))
+        # print("***********price:",stripe_subscription["items"]["data"][0]["price"])
+        # print("***********price details:",stripe.Price.retrieve(stripe_subscription["items"]["data"][0]["price"]["id"]))
+        # print(stripe_price)
+        # if status == 'trialing' and (billing_period_start_dt <= today <= billing_period_end_dt) and total_usage > 10000:
+        #     return jsonify({"message": "Exceeded trial usage limit for the billing period"}), 201
 
         query_text = text.strip()
         mod_response = openai.Moderation.create(input=text, )
@@ -295,7 +350,6 @@ def summarise_text():
                       ,"source":"paste_content","query_id":query_id,"query":query_text,"error":error})
             return jsonify({"message": error}), 401
         else:
-            llmmodel = os.environ['DEFAULT_LLM_MODEL']
             openai.api_key = os.environ['OPENAI_API_KEY']
             # physicianType = request.args.get('selectedPhysicianType')
             prompt = openai_funcs.setCodeGenPrompt(text.strip(), 'paste_text')
@@ -308,6 +362,7 @@ def summarise_text():
             try:
                 def generate():
                     full_response = ""
+                    llmmodel = os.environ['DEFAULT_LLM_MODEL']
                     for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
                         if "content" in resp.choices[0].delta:
                             text = resp.choices[0].delta.content
@@ -513,6 +568,7 @@ def browser_extn_search():
 @app.route("/api/browser-extn-stream", methods=["POST"])
 def browser_extn_st_search():
     try:
+        # print("browser-extn-stream ****************")
         uid = request.args.get('uid')
         if (uid == 'user_extnTestUser1'):
             return jsonify({"summary": "User not valid"}), 401
@@ -542,14 +598,12 @@ def browser_extn_st_search():
                 prompt = openai_funcs.setCodeGenPrompt(text.strip(), 'browser_extn_medcode')
                 message = openai_funcs.setChatMsg('browser_extn', prompt)
                 prompt_tokens = openai_funcs.num_tokens_from_messages(message)
-
-            ######################## START ##############################
                 def generate():
                     full_response = ""
                     for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
                         if "content" in resp.choices[0].delta:
                             text = resp.choices[0].delta.content
-                            final_text =text.replace('\n', '\\n')
+                            final_text =text #.replace('\n', '\\n')
                             full_response += final_text
                             yield f"{final_text}"
                             # time.sleep(1)  # Simulating a delay
@@ -562,19 +616,7 @@ def browser_extn_st_search():
                     db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                         .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
                             ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
-                    # if user_data['stripe_subscription_id']:
-                    #     subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
-                        # total_tokens = prompt_tokens + completion_tokens
-                        # print("all tokens", total_tokens, subscription_item_id)
-                        # stripe.SubscriptionItem.create_usage_record(
-                        #     subscription_item_id,  # Use the retrieved subscription item ID
-                        #     quantity=total_tokens,
-                        #     api_key=stripe_secret_key,
-                        #     action='increment',
-                        # )
-
                 return Response(stream_with_context(generate()), content_type='text/event-stream')
-            ####################### END ##########################
         else:
             return jsonify({"summary": "User not valid"}), 401
     except Exception as e:
@@ -700,17 +742,17 @@ def check_user_status():
             stripe_status = 'trialing'
         elif (stripe_subscription["status"] == 'active'):
             if stripe_customer['invoice_settings']['default_payment_method']:
-                # print("User is not in trial but has added payment method. Allow usage.")
+                print("User is not in trial but has added payment method. Allow usage.")
                 stripe_status = 'active_and_payment_added'
             else:
-                # print("User is not in trial. Does not have payment method. Don't allow usage.")
+                print("User is not in trial. Does not have payment method. Don't allow usage.")
                 stripe_status = 'active_and_payment_not_added'
         else:
             stripe_status = stripe_subscription["status"]
-        # print("CHECK-user-status > stripe_subscription_status:",stripe_status)
+            print("CHECK-user-status > stripe_subscription_status:",stripe_status)
 
         if user_data:
-            return jsonify({"status": stripe_status})
+            return jsonify({"status": stripe_status.strip()})
 
         return jsonify({"status": "user_not_found"}), 404
     
