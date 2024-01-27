@@ -38,7 +38,7 @@ function FileUpload({ result, Olddata, streamResponse, setStreamResponse, clearA
 const checkUserStatus =async ()=>{
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/check-user-status`, { id: user.id });
-      if (response.data.status == 'trialing ' || response.data.status == 'active_and_payment_added') {
+      if (response.data.status == 'trialing' || response.data.status == 'active_and_payment_added') {
         setOpen(false);
         return true
       } else {
