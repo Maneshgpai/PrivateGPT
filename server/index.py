@@ -63,22 +63,37 @@ def home():
 
 @app.route("/api/upload-file", methods=["POST"])
 def upload_files():
-    # print("Entered Upload File #################")
+
+    uid = request.args.get('uid')
+    db = firestore.Client.from_service_account_info(firestore_key_json)
+    now = datetime.datetime.utcnow()
+    query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
+    user_ref = db.collection('users').document(uid)
+    user_data = user_ref.get().to_dict()
+    
+    if not(user_data):
+        return jsonify({"status": "user_not_found"}), 404
+
+    # Fetch Stripe details from Firebase USER collection
+    # Raise error if Trial is expired but there is no payment method added
+    stripe_status = stripe_funcs.check_status(user_data)
+    if not(stripe_status == 'trialing' or stripe_status == 'active_and_payment_added'):
+        return jsonify({"status": "Billing issue. Please contact hello@physikally.com"}), 404
+
+    # Raise error if on on Trial period, but the daily quote is over
+    ####### Logic TBD #######
+
     if not request.files.getlist("files"):
         logger.error("No file detected")
         return jsonify({"message": "Please send one or more Files"}), 400
-
     files = request.files.getlist("files")
 
-    summaries = []
     allFiles = []
-
     try:
         for file in files:
             if file:
                 filename = secure_filename(file.filename)
-                filepath = os.path.join(
-                    'documents', os.path.basename(filename))
+                # filepath = os.path.join('documents', os.path.basename(filename))
                 
                 reader = PyPDF2.PdfReader(file)
                 # Iterate over each page and extract text
@@ -88,29 +103,7 @@ def upload_files():
                     allFiles.append(
                         {"filename": filename, "text": text}
                     )
-                    # logger.info(text)
         
-        uid = request.args.get('uid')
-        db = firestore.Client.from_service_account_info(firestore_key_json)
-        now = datetime.datetime.utcnow()
-        query_id = str(int((now.timestamp()*1000000))+random.randint(1000,9999))
-        query_text = text.strip()
-        user_ref = db.collection('users').document(uid)
-        user_data = user_ref.get().to_dict()
-
-        # Fetch Stripe details from Firebase USER collection
-        if not(user_data):
-            return jsonify({"status": "user_not_found"}), 404
-
-        # Raise error if Trial is expired but there is no payment method added
-        stripe_status = stripe_funcs.check_status(user_data)
-        if not(stripe_status == 'trialing' or stripe_status == 'active_and_payment_added'):
-            return jsonify({"status": "Billing issue. Please contact hello@physikally.com"}), 404
-
-        # Raise error if on on Trial period, but the daily quote is over
-        ####### Logic TBD #######
-
-
         # Moderate text using OpenAI moderation 
         mod_response = openai.Moderation.create(input=str(allFiles), )
         # logger.info(mod_response)
@@ -119,19 +112,21 @@ def upload_files():
             logger.error(error)
             db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                      ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
+                      ,"source":"upload_file","query_id":query_id,"query":str(allFiles),"upload_file":filename,"error":error})
             return jsonify({"message": error}), 401
-        else:
-            llmmodel = os.environ['DEFAULT_LLM_MODEL']
-            openai.api_key = os.environ['OPENAI_API_KEY']
-            # physicianType = request.args.get('selectedPhysicianType')
+            
+        llmmodel = os.environ['DEFAULT_LLM_MODEL']
+        openai.api_key = os.environ['OPENAI_API_KEY']
+        query_text = str(allFiles)
 
-            try:
-                prompt = openai_funcs.setCodeGenPrompt(str(allFiles), 'file_upload')
-                message = openai_funcs.setChatMsg('code_response', prompt)
-                prompt_tokens = openai_funcs.num_tokens_from_messages(message)
-                # full_response = ""
-                def generate():
+        try:
+            def generate():
+                for i in range(len(allFiles)):
+                    filenm = allFiles[i]['filename']
+                    text = allFiles[i]['text']
+
+                    prompt = openai_funcs.setCodeGenPrompt(str(allFiles[i]), 'file_upload')
+                    message = openai_funcs.setChatMsg('code_response', prompt)
                     full_response = ""
                     for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
                         if "content" in resp.choices[0].delta:
@@ -139,112 +134,66 @@ def upload_files():
                             final_text =text.replace('\n', '\\n')
                             full_response += final_text
                             yield f"{final_text}"
-                    
+                        
                     db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                        ,"source":"upload_file","query_id":query_id,"query":query_text,"response":full_response.strip(),"upload_file":filename})
+                        .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                              ,"source":"upload_file","query_id":query_id,"query":text,"response":full_response.strip(),"upload_file":filenm})
 
+                    prompt_tokens = openai_funcs.num_tokens_from_messages(message)
                     completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
                     if user_data['stripe_subscription_id']:
                         subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
                         total_tokens = prompt_tokens + completion_tokens
-                        # print("all tokens", total_tokens, subscription_item_id)
-
-                        stripe.SubscriptionItem.create_usage_record(
-                            subscription_item_id,  # Use the retrieved subscription item ID
-                            quantity=total_tokens,
-                            api_key=stripe_secret_key,
-                            action='increment',
-                        )
+                        stripe.SubscriptionItem.create_usage_record(subscription_item_id,quantity=total_tokens,api_key=stripe_secret_key,action='increment',)
 
                     db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                         .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                            ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
+                              ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
 
-                return Response(stream_with_context(generate()), content_type='text/event-stream')
+            return Response(stream_with_context(generate()), content_type='text/event-stream')
 
-            except AuthenticationError:
-                error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
-
-                logger.error(error)
-                # capture_exception(
-                #     error, data={"request": request}
-                # )
-                # capture_message(
-                #     traceback.format_exc(),
-                # )
-                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
-                return jsonify({"message": error}), 401
-            except APIError:
-                error = 'Retry your request after a brief wait and contact us if the issue persists.'
-                logger.error(error)
-                # capture_exception(
-                #     error, data={"request": request}
-                # )
-                # capture_message(
-                #     traceback.format_exc(),
-                # )
-
-                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
-                return jsonify({"message": error}), 401
-            except RateLimitError:
-                error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
-                logger.error(error)
-                # capture_exception(
-                #     error, data={"request": request}
-                # )
-                # capture_message(
-                #     traceback.format_exc(),
-                # )
-                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
-                return jsonify({"message": error}), 401
-            except APIConnectionError:
-                error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
-                logger.error(error)
-                # capture_exception(
-                #     error, data={"request": request}
-                # )
-                # capture_message(
-                #     traceback.format_exc(),
-                # )
-                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
-                return jsonify({"message": error}), 401
-            except ServiceUnavailableError:
-                error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
-                logger.error(error)
-                # capture_exception(
-                #     error, data={"request": request}
-                # )
-                # capture_message(
-                #     traceback.format_exc(),
-                # )
-                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
-                return jsonify({"message": error}), 401
-            except:
-                error = "Error: {}".format(traceback.format_exc())
-                logger.error(error)
-                # capture_exception(
-                #     error, data={"request": request}
-                # )
-                # capture_message(
-                #     traceback.format_exc(),
-                # )
-                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                    .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                          ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
-                return jsonify({"message": error}), 400
-
-    
+        except AuthenticationError:
+             error = 'Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys.'
+             logger.error(error)
+             db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                       ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
+             return jsonify({"message": error}), 401
+        except APIError:
+             error = 'Retry your request after a brief wait and contact us if the issue persists.'
+             logger.error(error)
+             db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                       ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
+             return jsonify({"message": error}), 401
+        except RateLimitError:
+             error = 'The API key has reached the rate limit. Contact Admin if isue persists.'
+             logger.error(error)
+             db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                       ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
+             return jsonify({"message": error}), 401
+        except APIConnectionError:
+             error = 'Check your network settings, proxy configuration, SSL certificates, or firewall rules.'
+             logger.error(error)
+             db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                       ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
+             return jsonify({"message": error}), 401
+        except ServiceUnavailableError:
+             error = 'Retry your request after a brief wait and contact us if the issue persists. Check OpenAI status page: https://status.openai.com/'
+             logger.error(error)
+             db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                       ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
+             return jsonify({"message": error}), 401
+        except:
+             error = "Error: {}".format(traceback.format_exc())
+             logger.error(error)
+             db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                       ,"source":"upload_file","query_id":query_id,"query":query_text,"upload_file":filename,"error":error})
+             return jsonify({"message": error}), 400    
     except Exception as e:
         error = "Error: {}".format(str(e))
         logger.error(error)
@@ -263,7 +212,6 @@ def get_usage():
         user_data = user_ref.get().to_dict()
         
         stripe_usage_hist = stripe.SubscriptionItem.list_usage_record_summaries(user_data['stripe_subscription_item_id'],limit=100,)
-        # print(stripe_usage_hist)
         usage = []
         for item in stripe_usage_hist["data"]:
             data = {}
