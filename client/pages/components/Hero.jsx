@@ -1,3 +1,4 @@
+import { colors } from "@/constant/colors";
 export default function Hero() {
   return (
     <div className="relative isolate px-6 pt-14 lg:px-8">
@@ -14,30 +15,28 @@ export default function Hero() {
         />
       </div>
       <div className="mx-auto max-w-2xl py-8 sm:py-12 lg:py-14">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-blue-900 sm:text-4xl">
-            MedCoder
-          </h1>
-          <p className="mt-6 text-lg leading-8 text-gray-600">
-            Take your time back from RCM complexities, produce efficient codes and get claims approved faster.
-          </p>
+        <div style={{display: "flex",justifyContent: "center",}}>
+          <img src="/Common/logo_with_name_Transparent.png" width={220} quality={100} alt="www.physikally.com" />
         </div>
+        <div className="text-center" position="absolute" style={{color:colors.brandColor}}>
+          <p className="mt-6 text-lg leading-6">Your personal coding assistant!</p>
+        </div>
+
         <div className="text-center">
           <div class="mt-10 flex items-center justify-center gap-x-6">
             <a
               href="/sign-up"
-              class="rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              class="rounded-full bg-purple-800 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Get Started <span aria-hidden="true">&rarr;</span>
             </a>
           </div>
         </div>
 
-        <div className="text-center">
-          <p className="mt-6 text-lg leading-8 text-gray-600">
-            <a href="/sign-in">Have an account? Sign in</a>
-          </p>
+        <div className="text-center mt-6 text-ug leading-5">
+        <p cclassName="mt-6 text-lg leading-8 text-gray-600">Have an account? <a href="/sign-in" style={{color:"#0000EE"}}>Sign In</a></p>
         </div>
+        
         
       </div>
 

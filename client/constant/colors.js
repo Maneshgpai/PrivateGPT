@@ -15,5 +15,5 @@ export const colors ={
     yellow: '#FFFF00',
     darkyellow: '#FFD700',
     iconColor: '#1E90FF',
-
+    brandColor: '#7216F4',
 }

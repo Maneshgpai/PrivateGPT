@@ -148,7 +148,7 @@ export default function Chat() {
       </div>
       <>
         <div className='flex justify-center align-middle'>
-        <Box sx={{ width: 500, }}>
+        <Box sx={{ width: 500 }}>
             <BottomNavigation
               showLabels
               value={value}
@@ -182,7 +182,7 @@ export default function Chat() {
               {/* </Tooltip> */}
 
               {/* <Tooltip title="Quick Search medical codes"> */}
-              <BottomNavigationAction
+              {/* <BottomNavigationAction
                 sm={{width: '5px'}}
                 aria-selected={activeTab === "qiksearch"}
                 label="Quick search"
@@ -191,18 +191,18 @@ export default function Chat() {
                 onClick={() => {
                   handleTabChange("qiksearch")
                   // setPdfView(false)
-                }} />
+                }} /> */}
               {/* </Tooltip> */}
 
               {/* <Tooltip title="Connect to your favourite EHR or EMR"> */}
-              <BottomNavigationAction
+              {/* <BottomNavigationAction
                 aria-selected={activeTab === "newemr"}
                 disabled
                 onClick={() => {
                   handleTabChange("newemr")
                   setPdfView(true)
                 }}
-                label="Connect EMR" icon={<LocalHospitalRoundedIcon />} />
+                label="Connect EMR" icon={<LocalHospitalRoundedIcon />} /> */}
               {/* </Tooltip> */}
             </BottomNavigation>
           </Box>

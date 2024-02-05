@@ -109,11 +109,11 @@ export default function Layout(props) {
       icon: <HomeRoundedIcon />,
       link: "/",
     },
-    {
-      name: "My EMR",
-      icon: <LocalHospital />,
-      link: "/myemr",
-    },
+    // {
+    //   name: "My EMR",
+    //   icon: <LocalHospital />,
+    //   link: "/myemr",
+    // },
     {
       name: "Usage",
       icon: <LeaderboardIcon />,
