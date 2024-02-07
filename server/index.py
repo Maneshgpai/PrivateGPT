@@ -20,6 +20,8 @@ import datetime
 import random
 import stripe
 from svix.webhooks import Webhook, WebhookVerificationError
+import smtplib
+from email.message import EmailMessage
 
 load_dotenv(find_dotenv())
 
@@ -509,7 +511,7 @@ def browser_extn_st_search():
 
         # Check if Trial expired but not yet added payment method. Basically perform check-user-status as a function
         stripe_status = stripe_funcs.check_status(user_data)
-        print("stripe_status:",stripe_status)
+        # print("stripe_status:",stripe_status)
         if not(stripe_status == 'trialing' or stripe_status == 'active_and_payment_added'):
             return Response("Your trial period is over. Please email hello@physikally.com to continue using.", content_type='text/event-stream')
 
@@ -585,7 +587,35 @@ def user_deleted():
         user_ref.update({'status_upd_dt': firestore.SERVER_TIMESTAMP})
 
         user_data = user_ref.get().to_dict()
-        stripe.Customer.delete(user_data['stripe_customer_id'])
+        
+        ## Delete Stripe account
+        # stripe.Customer.delete(user_data['stripe_customer_id'])
+
+        msg = EmailMessage()
+        message = "email:"+user_data['email']+\
+            "\nfirst_name:"+user_data['first_name']+\
+            "\nuser_id:"+user_data['user_id']+\
+            "\n\nNext actions:"+\
+            "\n1. Check Stripe payment status. If all bills settled, delete account. Else followup."+\
+            "\n2. Check usage and type of queries run from Firebase usage logs"+\
+            "\n3. Ask why deleted - engage with user without being intrusive into queries"+\
+            "\n4. Share user survey which should get saved to CRM"
+            # "\n ============="+\
+            # "\n user_data:"+str(user_data)+\
+        msg.set_content(message)
+        sender_email_id = os.environ["sender_email_id"]
+        sender_email_pwd = os.environ["sender_email_pwd"]
+        rcvr_email_id = os.environ["rcvr_email_id"]
+
+        msg['Subject'] = f'User DELETED : '+user_data['email']
+        msg['From'] = sender_email_id
+        msg['To'] = rcvr_email_id
+        
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        s.starttls()
+        s.login(sender_email_id, sender_email_pwd)
+        s.send_message(msg)
+        s.quit()
 
         return jsonify({"message": "User account with all associated data is deleted from server"}), 200
     except Exception as e:
