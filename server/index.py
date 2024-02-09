@@ -121,36 +121,65 @@ def upload_files():
         openai.api_key = os.environ['OPENAI_API_KEY']
         query_text = str(allFiles)
 
-        try:
-            def generate():
-                for i in range(len(allFiles)):
-                    filenm = allFiles[i]['filename']
-                    text = allFiles[i]['text']
+        # try:
+        #     def generate():
+        #         for i in range(len(allFiles)):
+        #             filenm = allFiles[i]['filename']
+        #             text = allFiles[i]['text']
 
-                    prompt = openai_funcs.setCodeGenPrompt(str(allFiles[i]), 'file_upload')
-                    message = openai_funcs.setChatMsg('code_response', prompt)
-                    full_response = ""
-                    for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
-                        if "content" in resp.choices[0].delta:
-                            text = resp.choices[0].delta.content
-                            final_text =text.replace('\n', '\\n')
-                            full_response += final_text
-                            yield f"{final_text}"
+        #             prompt = openai_funcs.setCodeGenPrompt(str(allFiles[i]), 'file_upload')
+        #             message = openai_funcs.setChatMsg('code_response', prompt)
+        #             full_response = ""
+        #             for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
+        #                 if "content" in resp.choices[0].delta:
+        #                     text = resp.choices[0].delta.content
+        #                     final_text =text.replace('\n', '\\n')
+        #                     full_response += final_text
+        #                     yield f"{final_text}"
                         
-                    db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
-                        .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                              ,"source":"upload_file","query_id":query_id,"query":text,"response":full_response.strip(),"upload_file":filenm})
+        #             db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+        #                 .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+        #                       ,"source":"upload_file","query_id":query_id,"query":text,"response":full_response.strip(),"upload_file":filenm})
 
-                    prompt_tokens = openai_funcs.num_tokens_from_messages(message)
-                    completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
-                    if user_data['stripe_subscription_id']:
-                        subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
-                        total_tokens = prompt_tokens + completion_tokens
-                        stripe.SubscriptionItem.create_usage_record(subscription_item_id,quantity=total_tokens,api_key=stripe_secret_key,action='increment',)
-
-                    db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+        #             prompt_tokens = openai_funcs.num_tokens_from_messages(message)
+        #             completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
+        #             if user_data['stripe_subscription_id']:
+        #                 subscription_item_id = user_data['stripe_subscription_item_id']  # Retrieve the subscription item ID
+        #                 total_tokens = prompt_tokens + completion_tokens
+        #                 stripe.SubscriptionItem.create_usage_record(subscription_item_id,quantity=total_tokens,api_key=stripe_secret_key,action='increment',)
+        try:
+            prompt = openai_funcs.setCodeGenPrompt(str(allFiles), 'file_upload')
+            message = openai_funcs.setChatMsg('code_response', prompt)
+            prompt_tokens = openai_funcs.num_tokens_from_messages(message)
+            def generate():
+                full_response = ""
+                for resp in openai.ChatCompletion.create(model=llmmodel, messages=message, temperature=0, stream=True):
+                    if "content" in resp.choices[0].delta:
+                        text = resp.choices[0].delta.content
+                        final_text =text.replace('\n', '\\n')
+                        full_response += final_text
+                        yield f"{final_text}"
+                    
+                db.collection(uid).document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
                         .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
-                              ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens), "query_id":query_id})
+                              ,"source":"upload_file","query_id":query_id,"query":text,"response":full_response.strip(),"upload_file":filename})
+
+                completion_tokens = openai_funcs.num_tokens_from_response(full_response.strip())
+                if user_data['stripe_subscription_id']:
+                    subscription_item_id = user_data['stripe_subscription_item_id']
+                    total_tokens = prompt_tokens + completion_tokens
+
+                    stripe.SubscriptionItem.create_usage_record(
+                            subscription_item_id,  # Use the retrieved subscription item ID
+                            quantity=total_tokens,
+                            api_key=stripe_secret_key,
+                            action='increment',
+                        )
+                db.collection(uid+"_usage").document(str(datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')))\
+                        .set({"timestamp": datetime.datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S.%f')\
+                              ,"prompt_tokens":prompt_tokens,"completion_tokens":completion_tokens,"total_tokens":\
+                                prompt_tokens+completion_tokens,"llm_cost":openai_funcs.getOpenaiApiCost(llmmodel,completion_tokens,prompt_tokens)\
+                                    , "query_id":query_id})
 
             return Response(stream_with_context(generate()), content_type='text/event-stream')
 

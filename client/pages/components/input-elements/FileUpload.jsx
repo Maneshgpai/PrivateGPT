@@ -257,7 +257,7 @@ const checkUserStatus =async ()=>{
       <div className="flex flex-row lg:gap-4 sm:gap-2">
       <Button component="label" variant="contained" disableElevation 
         onChange={(e) => handleOnChange(e)}
-        sx={{ textTransform: 'capitalize', fontSize: 12, mx: 1 }}><DevicesOutlinedIcon sx={{mr:1, size:"small" }}/>Browse file from computer<VisuallyHiddenInput type="file" multiple accept="application/pdf" />
+        sx={{ textTransform: 'capitalize', fontSize: 12, mx: 1 }}><DevicesOutlinedIcon sx={{mr:1, size:"small" }}/>Browse file from computer<VisuallyHiddenInput type="file" single accept="application/pdf" />
       </Button>
       <Button component="label" variant="contained" disableElevation 
         onChange={(e) => handleOnChange(e)} disabled
